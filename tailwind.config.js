@@ -20,8 +20,8 @@ export default {
           accent: '#0D9488', // Deep teal
           accentHover: '#14B8A6',
           accentLight: '#2DD4BF',
-          lead: '#F59E0B', // Amber for active investigative leads
-          leadHover: '#D97706',
+          lead: '#D97706', // Amber for active investigative leads
+          leadHover: '#B45309',
           auditAlert: '#EF4444', // Red reserved strictly for audit security/access warnings
           verified: '#10B981', // Subtle emerald for human-verified status
         },

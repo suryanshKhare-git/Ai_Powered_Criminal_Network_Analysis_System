@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
-import { useTheme } from '../../context/ThemeContext';
 import { USER_ROLES } from '../../data/mockDataset';
 import {
   Shield,
-  Sun,
   Moon,
   ChevronDown,
   FolderLock,
@@ -22,7 +20,6 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({ onOpenShortcuts }) => {
   const { currentRole, setRole, caseOverview, setActiveView } = useApp();
-  const { theme, toggleTheme } = useTheme();
   const [roleMenuOpen, setRoleMenuOpen] = useState(false);
 
   return (
@@ -156,15 +153,14 @@ export const Header: React.FC<HeaderProps> = ({ onOpenShortcuts }) => {
             )}
           </div>
 
-          {/* Dark / Light Mode Switch */}
-          <button
-            onClick={toggleTheme}
-            className="p-2 rounded bg-setu-card hover:bg-slate-800 border border-setu-border text-slate-300 hover:text-white transition"
-            title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} mode`}
-            aria-label="Toggle theme"
+          {/* Dark Mode Indicator with Moon Icon */}
+          <div
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded bg-setu-card border border-setu-border text-xs text-slate-300 select-none shadow-sm"
+            title="Operational Environment: High-Contrast Dark Mode"
           >
-            {theme === 'dark' ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-slate-600" />}
-          </button>
+            <Moon className="w-3.5 h-3.5 text-teal-400" />
+            <span className="text-[11px] font-mono text-slate-300 hidden sm:inline">DARK MODE</span>
+          </div>
 
           {/* Keyboard Shortcuts Guide */}
           <button
