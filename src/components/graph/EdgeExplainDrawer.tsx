@@ -13,7 +13,9 @@ import {
   HelpCircle,
   XCircle,
   Pin,
-  Sparkles,
+  Network,
+  Activity,
+  SlidersHorizontal,
   Info,
   Clock,
   UserCheck,
@@ -70,8 +72,8 @@ export const EdgeExplainDrawer: React.FC<EdgeExplainDrawerProps> = ({ edge, onCl
         );
       default:
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded text-xs font-mono font-medium bg-cyan-950/80 border border-cyan-500/60 text-cyan-300">
-            <Sparkles className="w-3.5 h-3.5" />
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded text-xs font-mono font-medium bg-slate-900 border border-teal-800/60 text-teal-300">
+            <Activity className="w-3.5 h-3.5 text-teal-400" />
             PENDING INVESTIGATOR REVIEW
           </span>
         );
@@ -84,7 +86,7 @@ export const EdgeExplainDrawer: React.FC<EdgeExplainDrawerProps> = ({ edge, onCl
       <div className="p-4 border-b border-setu-border flex items-center justify-between bg-setu-card/70">
         <div className="flex items-center gap-2.5">
           <div className="p-2 rounded bg-teal-950/80 border border-teal-500/50 text-teal-400">
-            <Sparkles className="w-5 h-5" />
+            <Network className="w-5 h-5" />
           </div>
           <div>
             <div className="text-[10px] font-mono uppercase tracking-wider text-setu-textMuted">

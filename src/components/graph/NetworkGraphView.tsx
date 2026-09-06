@@ -10,7 +10,6 @@ import {
   RefreshCw,
   Filter,
   Layers,
-  Sparkles,
   ShieldCheck,
   Search,
   SlidersHorizontal,

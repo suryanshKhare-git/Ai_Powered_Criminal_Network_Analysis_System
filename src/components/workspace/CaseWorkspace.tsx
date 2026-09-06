@@ -9,7 +9,6 @@ import {
   Trash2,
   Tag,
   ArrowRight,
-  Sparkles,
   CheckCircle2,
   HelpCircle,
   XCircle,

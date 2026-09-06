@@ -13,7 +13,7 @@ import {
   Pin,
   Share2,
   ExternalLink,
-  Sparkles,
+  Cpu,
   Filter,
 } from 'lucide-react';
 
@@ -183,7 +183,7 @@ export const UniversalSearch: React.FC = () => {
         {detectedTypeSuggestion && searchQuery.trim().length > 1 && (
           <div className="flex items-center justify-between px-3.5 py-2 rounded-md bg-slate-900/90 border border-setu-border text-xs text-slate-300">
             <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-teal-400" />
+              <Cpu className="w-4 h-4 text-teal-400" />
               <span className="font-mono text-setu-textMuted">Auto-classifier:</span>
               <span className="flex items-center gap-1.5 font-medium text-teal-300">
                 {detectedTypeSuggestion.icon}

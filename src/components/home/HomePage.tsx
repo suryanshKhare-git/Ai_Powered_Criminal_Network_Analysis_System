@@ -11,7 +11,6 @@ import {
   CheckCircle2,
   FileCheck,
   Award,
-  Sparkles,
   Phone,
   Truck,
   CreditCard,
@@ -25,10 +24,17 @@ import {
   ChevronRight,
   Database,
   SlidersHorizontal,
+  Activity,
+  Cpu,
+  FolderLock,
+  AlertTriangle,
+  FileSpreadsheet,
+  Check,
+  Terminal,
 } from 'lucide-react';
 
 export const HomePage: React.FC = () => {
-  const { setActiveView, selectEntity } = useApp();
+  const { setActiveView, selectEntity, caseOverview } = useApp();
 
   const handleLaunchCaseStudy = () => {
     selectEntity('ent-person-1');
@@ -36,592 +42,508 @@ export const HomePage: React.FC = () => {
   };
 
   return (
-    <div className="flex-1 overflow-y-auto bg-setu-bg text-setu-text select-none animate-fadeIn pb-16">
-      {/* 1. HERO SECTION */}
-      <section className="relative border-b border-setu-border bg-gradient-to-b from-[#0B1120] via-setu-surface to-setu-bg px-4 sm:px-6 py-12 sm:py-16">
-        <div className="max-w-6xl mx-auto space-y-6">
-          {/* Official Emblem & Badge */}
-          <div className="flex flex-wrap items-center gap-2.5">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-semibold bg-teal-950/80 border border-teal-500/60 text-teal-300">
-              <Shield className="w-3.5 h-3.5" />
-              INTELLIGENCE & RECORD UNIFICATION PLATFORM
+    <div className="flex-1 overflow-y-auto bg-setu-bg text-setu-text select-none pb-16">
+      {/* 1. INSTITUTIONAL TELEMETRY & STATUS BANNER */}
+      <div className="border-b border-setu-border bg-setu-surface/90 px-4 sm:px-6 py-2.5">
+        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3 text-xs font-mono">
+          <div className="flex items-center gap-2.5">
+            <span className="w-2 h-2 rounded-full bg-teal-400 inline-block" />
+            <span className="text-slate-300 font-semibold tracking-wider uppercase">
+              OPERATIONAL BRIEFING CONSOLE
             </span>
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-mono text-slate-400 bg-slate-900 border border-slate-800">
-              <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+            <span className="text-slate-600">|</span>
+            <span className="text-setu-textMuted hidden sm:inline">
+              SYSTEM MANDATE: EXPLAINABLE RECORD LINKAGE & ENTITY RESOLUTION
+            </span>
+          </div>
+          <div className="flex items-center gap-3 text-[11px] text-slate-400">
+            <span className="flex items-center gap-1.5 text-emerald-400">
+              <CheckCircle2 className="w-3.5 h-3.5" />
               SECTION 65B IEA / 63 BSA COMPLIANT
             </span>
+            <span className="text-slate-600 hidden md:inline">|</span>
+            <span className="hidden md:inline text-slate-400 font-mono">
+              TAMPER-EVIDENT AUDIT SEAL ACTIVE
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-8">
+        {/* 2. HEADER & OPERATIONAL MANDATE */}
+        <div className="space-y-4">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-setu-border pb-6">
+            <div>
+              <div className="flex items-center gap-2.5 text-xs font-mono text-teal-400 font-semibold mb-1">
+                <Shield className="w-4 h-4" />
+                <span>CENTRALIZED INTELLIGENCE & RECORD RESOLUTION PLATFORM</span>
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white font-sans uppercase">
+                SETU <span className="text-teal-400 font-normal font-mono text-xl sm:text-2xl ml-1">सेतु</span>
+                <span className="text-sm font-normal text-slate-400 font-mono ml-3 border-l border-slate-700 pl-3">
+                  v2.4-XAI
+                </span>
+              </h1>
+              <p className="text-xs sm:text-sm text-slate-400 mt-1 max-w-3xl">
+                Multi-agency investigative record correlation engine. Connects isolated police databases into an explainable entity graph with human oversight.
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+              <button
+                onClick={() => setActiveView('search')}
+                className="flex items-center gap-2 px-4 py-2 rounded bg-setu-card hover:bg-slate-800 border border-setu-borderLight text-slate-200 text-xs font-semibold font-mono transition"
+              >
+                <Search className="w-3.5 h-3.5 text-teal-400" />
+                <span>UNIVERSAL SEARCH</span>
+                <kbd className="px-1.5 py-0.2 bg-slate-900 border border-slate-700 rounded text-[10px] text-slate-400">
+                  /
+                </kbd>
+              </button>
+
+              <button
+                onClick={() => setActiveView('graph')}
+                className="flex items-center gap-2 px-4 py-2 rounded bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold font-mono shadow-sm transition"
+              >
+                <Share2 className="w-3.5 h-3.5" />
+                <span>LAUNCH GRAPH CONSOLE</span>
+                <ArrowRight className="w-3.5 h-3.5 ml-0.5" />
+              </button>
+            </div>
           </div>
 
-          {/* Main Titles */}
-          <div className="space-y-3">
-            <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-white font-sans uppercase">
-              SETU <span className="text-teal-400 font-normal ml-2 font-mono text-2xl sm:text-4xl tracking-normal">सेतु</span>
-            </h1>
-            <p className="text-lg sm:text-xl font-medium text-slate-300 font-sans max-w-2xl">
-              System for Explainable Tracking & Unification
+          {/* Institutional Operating Directive Box */}
+          <div className="bg-setu-surface border border-setu-border rounded-lg p-5">
+            <div className="flex items-center justify-between border-b border-setu-border/80 pb-2.5 mb-3">
+              <div className="flex items-center gap-2 text-xs font-mono text-teal-400 font-semibold tracking-wider uppercase">
+                <Terminal className="w-4 h-4 text-teal-400" />
+                SYSTEM MANDATE & OPERATIONAL PROTOCOL
+              </div>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-900 border border-slate-700 text-slate-400">
+                DIRECTIVE REF: MHA/LEA-INTEL/2024
+              </span>
+            </div>
+            <p className="text-xs sm:text-sm text-slate-200 leading-relaxed font-sans">
+              "<strong>SETU</strong> connects fragmented, siloed crime records (<strong>FIRs</strong>, <strong>CDRs</strong>, <strong>financial data</strong>, <strong>vehicle registries</strong>, <strong>surveillance logs</strong>) into a single explainable network graph, so an authorized investigator can search any entity — a person, phone number, vehicle, location, organization, or case — and instantly see how it relates to everything else, with a plain-language explanation for every connection and full human oversight before any conclusion is acted on."
             </p>
-          </div>
-
-          {/* Highlighted Refined Pitch Box */}
-          <div className="p-5 sm:p-6 rounded-xl bg-slate-900/90 border-2 border-teal-500/50 shadow-2xl relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-48 h-48 bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
-            <div className="flex items-start gap-4">
-              <div className="p-3 rounded-lg bg-teal-950/80 border border-teal-500/40 text-teal-400 shrink-0 mt-1 hidden sm:block">
-                <Sparkles className="w-6 h-6" />
-              </div>
-              <div className="space-y-2">
-                <div className="text-[11px] font-mono text-teal-300 uppercase tracking-wider font-semibold">
-                  Core Mission & System Mandate
-                </div>
-                <p className="text-sm sm:text-base text-slate-100 font-sans leading-relaxed">
-                  "<strong>SETU</strong> connects fragmented, siloed crime records (<span className="text-teal-300">FIRs</span>, <span className="text-teal-300">CDRs</span>, <span className="text-teal-300">financial data</span>, <span className="text-teal-300">vehicle registries</span>, <span className="text-teal-300">surveillance logs</span>) into a single explainable network graph, so an authorized investigator can search any entity — a person, phone number, vehicle, location, organization, or case — and instantly see how it relates to everything else, with a plain-language explanation for every connection and full human oversight before any conclusion is acted on."
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Action Launcher Buttons */}
-          <div className="flex flex-wrap items-center gap-3 pt-2">
-            <button
-              onClick={() => setActiveView('graph')}
-              className="flex items-center gap-2 px-5 py-3 rounded-lg bg-teal-600 hover:bg-teal-500 text-white text-sm font-semibold shadow-xl transition-all duration-200 transform hover:translate-y-[-1px]"
-            >
-              <Share2 className="w-4 h-4" />
-              Launch Live Investigation Console
-              <ArrowRight className="w-4 h-4" />
-            </button>
-
-            <button
-              onClick={() => setActiveView('search')}
-              className="flex items-center gap-2 px-5 py-3 rounded-lg bg-setu-card hover:bg-slate-800 border border-setu-borderLight text-slate-200 text-sm font-semibold transition"
-            >
-              <Search className="w-4 h-4 text-teal-400" />
-              Try Universal Search
-            </button>
-
-            <button
-              onClick={handleLaunchCaseStudy}
-              className="flex items-center gap-2 px-4 py-3 rounded-lg bg-slate-900 hover:bg-slate-800 border border-amber-500/40 text-amber-300 text-sm font-medium transition"
-            >
-              <FileText className="w-4 h-4" />
-              Demo: Operation Northern Haul (FIR #492/2024)
-            </button>
-          </div>
-        </div>
-      </section>
-
-      {/* 2. THE PROBLEM VS. THE SETU SOLUTION */}
-      <section className="px-4 sm:px-6 py-12 max-w-6xl mx-auto space-y-8">
-        <div className="text-center max-w-2xl mx-auto space-y-2">
-          <div className="text-xs font-mono uppercase tracking-widest text-teal-400 font-semibold">
-            Why Law Enforcement Needs SETU
-          </div>
-          <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
-            Breaking Through The Multi-Agency Data Silos
-          </h2>
-          <p className="text-xs sm:text-sm text-setu-textMuted leading-relaxed">
-            Organized syndicates operate across state borders, using burner SIMs, decoy logistics, and hawala accounts. Traditional police methods take weeks of manual spreadsheet cross-referencing.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Traditional Silos Card */}
-          <div className="bg-setu-surface border border-red-900/40 rounded-xl p-6 space-y-4 shadow-lg">
-            <div className="flex items-center justify-between border-b border-setu-border/60 pb-3">
-              <div className="flex items-center gap-2 text-red-400 font-bold text-sm uppercase font-mono">
-                <ShieldAlert className="w-4 h-4" />
-                The Traditional Challenge
-              </div>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-red-950/60 border border-red-800/60 text-red-300">
-                FRAGMENTED SILOS
+            <div className="mt-3 pt-3 border-t border-setu-border/60 flex flex-wrap items-center justify-between gap-2 text-[11px] font-mono text-slate-400">
+              <span className="text-amber-400 font-semibold">
+                LEGAL NOTICE: Machine associations are classified as "Investigative Leads" and do not constitute self-proving evidence.
               </span>
+              <span>HUMAN INVESTIGATOR SIGN-OFF MANDATORY PRIOR TO CHARGESHEET</span>
             </div>
-
-            <ul className="space-y-3 text-xs text-slate-300 leading-relaxed">
-              <li className="flex items-start gap-2.5">
-                <span className="text-red-400 font-bold mt-0.5">✕</span>
-                <div>
-                  <strong className="text-white">State-Locked FIRs:</strong> First Information Reports locked in state CCTNS silos, making cross-border modus operandi invisible.
-                </div>
-              </li>
-              <li className="flex items-start gap-2.5">
-                <span className="text-red-400 font-bold mt-0.5">✕</span>
-                <div>
-                  <strong className="text-white">Raw 50,000-Row CDR Dumps:</strong> Excel spreadsheets from telecom operators analyzed manually with basic VLOOKUPs.
-                </div>
-              </li>
-              <li className="flex items-start gap-2.5">
-                <span className="text-red-400 font-bold mt-0.5">✕</span>
-                <div>
-                  <strong className="text-white">Isolated Transit & Toll Records:</strong> FASTag sensor logs and CCTV camera footage stored in separate proprietary databases.
-                </div>
-              </li>
-              <li className="flex items-start gap-2.5">
-                <span className="text-red-400 font-bold mt-0.5">✕</span>
-                <div>
-                  <strong className="text-white">Unexplainable "Black Box" AI:</strong> Proprietary vendor algorithms rejected by courts and defense lawyers due to lack of explainability.
-                </div>
-              </li>
-            </ul>
-          </div>
-
-          {/* SETU Solution Card */}
-          <div className="bg-setu-surface border-2 border-teal-500/50 rounded-xl p-6 space-y-4 shadow-xl relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-teal-500/10 rounded-full blur-2xl pointer-events-none" />
-            <div className="flex items-center justify-between border-b border-setu-border/60 pb-3">
-              <div className="flex items-center gap-2 text-teal-300 font-bold text-sm uppercase font-mono">
-                <CheckCircle2 className="w-4 h-4 text-teal-400" />
-                The SETU Architecture
-              </div>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-teal-950 border border-teal-600 text-teal-300 font-semibold">
-                EXPLAINABLE GRAPH
-              </span>
-            </div>
-
-            <ul className="space-y-3 text-xs text-slate-300 leading-relaxed">
-              <li className="flex items-start gap-2.5">
-                <span className="text-teal-400 font-bold mt-0.5">✓</span>
-                <div>
-                  <strong className="text-white">Multi-Modal Ingestion:</strong> Connectors ingest FIRs, CDRs, Vahan registries, bank ledgers, and CCTV logs in seconds.
-                </div>
-              </li>
-              <li className="flex items-start gap-2.5">
-                <span className="text-teal-400 font-bold mt-0.5">✓</span>
-                <div>
-                  <strong className="text-white">3-Tier Entity Resolution:</strong> Automatically resolves blind-indexed phones, IMEI numbers, and license plates without exposing raw PII.
-                </div>
-              </li>
-              <li className="flex items-start gap-2.5">
-                <span className="text-teal-400 font-bold mt-0.5">✓</span>
-                <div>
-                  <strong className="text-white">Plain-Language Explanations:</strong> Every link is explained in natural language and directly cites underlying document lines.
-                </div>
-              </li>
-              <li className="flex items-start gap-2.5">
-                <span className="text-teal-400 font-bold mt-0.5">✓</span>
-                <div>
-                  <strong className="text-white">Court-Ready Evidentiary Output:</strong> 1-click generation of Section 65B IEA / Section 63 BSA certified judicial dossiers with officer digital signatures.
-                </div>
-              </li>
-            </ul>
           </div>
         </div>
-      </section>
 
-      {/* 3. HOW IT WORKS (4-STAGE PIPELINE) */}
-      <section className="px-4 sm:px-6 py-12 border-y border-setu-border bg-setu-surface/40">
-        <div className="max-w-6xl mx-auto space-y-8">
-          <div className="text-center max-w-2xl mx-auto space-y-1">
-            <div className="text-xs font-mono uppercase tracking-widest text-teal-400 font-semibold">
-              The Engine
-            </div>
-            <h2 className="text-2xl font-bold text-white tracking-tight">
-              From Raw Case Files to Courtroom Evidence in 4 Steps
+        {/* 3. MULTI-SOURCE INGESTION TELEMETRY STRIP */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xs font-mono uppercase tracking-wider text-slate-400 font-semibold flex items-center gap-2">
+              <Database className="w-3.5 h-3.5 text-teal-400" />
+              Live Ingestion Connectors & Canonical Repositories
             </h2>
+            <span className="text-[11px] font-mono text-emerald-400">
+              5/5 CONNECTORS OPERATIONAL
+            </span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
             {[
               {
-                step: '01',
-                title: 'Multi-Source Ingestion',
-                desc: 'Queue-based ingestion normalizes FIRs, CDRs/IPDR, Vahan registrations, FASTag logs, and Bank RTGS statements with cryptographic SHA-256 fingerprinting.',
-                icon: <Database className="w-5 h-5 text-cyan-400" />,
+                source: 'CCTNS FIR Store',
+                type: 'First Information Reports',
+                records: '14,820 dockets',
+                latency: '42ms',
+                status: 'ONLINE',
+                icon: <FileText className="w-4 h-4 text-cyan-400" />,
               },
               {
-                step: '02',
-                title: '3-Tier Entity Resolution',
-                desc: 'Tier 1 exact match on high-entropy blind tokens; Tier 2 Jaro-Winkler phonetic name/alias matching; Tier 3 spatio-temporal tower colocation.',
-                icon: <SlidersHorizontal className="w-5 h-5 text-teal-400" />,
+                source: 'Telecom Gateway',
+                type: 'CDR / IPDR / Cell Azimuth',
+                records: '184,200 events',
+                latency: '68ms',
+                status: 'ONLINE',
+                icon: <Phone className="w-4 h-4 text-teal-400" />,
               },
               {
-                step: '03',
-                title: 'Explainable Knowledge Graph',
-                desc: '60 FPS force-directed physics graph with bounded k-hop traversal. Every edge shows plain-language reasons, factor weights, and underlying exhibits.',
-                icon: <Share2 className="w-5 h-5 text-amber-400" />,
+                source: 'MoRTH Vahan & FASTag',
+                type: 'Vehicle & Toll Passage',
+                records: '9,410 passages',
+                latency: '35ms',
+                status: 'ONLINE',
+                icon: <Truck className="w-4 h-4 text-amber-400" />,
               },
               {
-                step: '04',
-                title: 'Human Oversight & Dossier',
-                desc: 'Investigating officers verify or reject leads. One-click export formats a formal judicial dossier certified under Section 65B IEA / Section 63 BSA.',
-                icon: <Award className="w-5 h-5 text-emerald-400" />,
+                source: 'FIU Financial Feeds',
+                type: 'Bank RTGS & Cash Alerts',
+                records: '3,120 tx lines',
+                latency: '51ms',
+                status: 'ONLINE',
+                icon: <CreditCard className="w-4 h-4 text-emerald-400" />,
               },
-            ].map((s, idx) => (
+              {
+                source: 'Surveillance Feeds',
+                type: 'CCTV ANPR / Geo Logs',
+                records: '890 captures',
+                latency: '29ms',
+                status: 'ONLINE',
+                icon: <MapPin className="w-4 h-4 text-indigo-400" />,
+              },
+            ].map((feed, idx) => (
               <div
                 key={idx}
-                className="bg-setu-surface border border-setu-border rounded-xl p-5 space-y-3 relative group hover:border-teal-500/60 transition"
+                className="bg-setu-surface border border-setu-border rounded-md p-3 space-y-2"
               >
                 <div className="flex items-center justify-between">
-                  <div className="p-2 rounded-lg bg-setu-card border border-setu-border">
-                    {s.icon}
+                  <div className="p-1.5 rounded bg-setu-card border border-setu-border">
+                    {feed.icon}
                   </div>
-                  <span className="text-xl font-mono font-black text-slate-700 group-hover:text-teal-400 transition">
-                    {s.step}
+                  <span className="text-[10px] font-mono font-semibold px-1.5 py-0.2 rounded bg-emerald-950/80 border border-emerald-800 text-emerald-300">
+                    {feed.status}
                   </span>
                 </div>
-                <h3 className="text-sm font-bold text-white">{s.title}</h3>
-                <p className="text-xs text-setu-textMuted leading-relaxed">{s.desc}</p>
+                <div>
+                  <div className="text-xs font-bold text-slate-200 truncate">{feed.source}</div>
+                  <div className="text-[11px] text-setu-textMuted truncate">{feed.type}</div>
+                </div>
+                <div className="pt-1.5 border-t border-setu-border/60 flex items-center justify-between text-[10px] font-mono text-slate-400">
+                  <span>{feed.records}</span>
+                  <span className="text-slate-500">{feed.latency}</span>
+                </div>
               </div>
             ))}
           </div>
         </div>
-      </section>
 
-      {/* 4. INTERACTIVE FEATURE SUITE (1-CLICK LAUNCHERS) */}
-      <section className="px-4 sm:px-6 py-12 max-w-6xl mx-auto space-y-8">
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 border-b border-setu-border/60 pb-4">
-          <div>
-            <div className="text-xs font-mono uppercase tracking-widest text-teal-400 font-semibold">
-              Live Interactive Tools
-            </div>
-            <h2 className="text-2xl font-bold text-white tracking-tight">
-              Explore the Platform Modules
-            </h2>
-          </div>
-          <p className="text-xs text-setu-textMuted font-mono">
-            Click any module below to launch directly into the operational tool
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {/* Feature 1: Universal Search */}
-          <div className="bg-setu-surface border border-setu-border hover:border-teal-500/60 rounded-xl p-5 flex flex-col justify-between space-y-4 transition shadow-sm group">
-            <div className="space-y-2.5">
-              <div className="flex items-center justify-between">
-                <div className="p-2.5 rounded-lg bg-teal-950/60 border border-teal-500/40 text-teal-400">
-                  <Search className="w-5 h-5" />
-                </div>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-slate-400">
-                  HOTKEY: /
+        {/* 4. ACTIVE PRIMARY INVESTIGATION DOCKET */}
+        <div className="bg-setu-surface border border-setu-border rounded-lg p-5 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-setu-border pb-3">
+            <div className="flex items-center gap-2.5">
+              <FolderLock className="w-4 h-4 text-amber-400 shrink-0" />
+              <div>
+                <span className="text-[10px] font-mono text-amber-400 uppercase font-semibold">
+                  ACTIVE CASE FILE IN CONSOLE
                 </span>
+                <h3 className="text-sm sm:text-base font-bold text-white font-sans">
+                  {caseOverview.title} — {caseOverview.firNumber}
+                </h3>
               </div>
-              <h3 className="text-base font-bold text-white group-hover:text-teal-300 transition">
-                Universal Entity Omnibox
-              </h3>
-              <p className="text-xs text-setu-textMuted leading-relaxed">
-                Accepts phone numbers, license plates, suspect names, bank A/Cs, or FIR IDs with real-time heuristic type-ahead auto-detection.
-              </p>
             </div>
-            <button
-              onClick={() => setActiveView('search')}
-              className="flex items-center justify-between w-full pt-3 border-t border-setu-border/50 text-xs font-semibold text-teal-300 hover:text-white transition"
-            >
-              <span>Launch Universal Search</span>
-              <ChevronRight className="w-4 h-4 text-teal-400 group-hover:translate-x-1 transition" />
-            </button>
-          </div>
-
-          {/* Feature 2: Force-Directed Graph */}
-          <div className="bg-setu-surface border border-setu-border hover:border-teal-500/60 rounded-xl p-5 flex flex-col justify-between space-y-4 transition shadow-sm group">
-            <div className="space-y-2.5">
-              <div className="flex items-center justify-between">
-                <div className="p-2.5 rounded-lg bg-teal-950/60 border border-teal-500/40 text-teal-400">
-                  <Share2 className="w-5 h-5" />
-                </div>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-slate-400">
-                  60 FPS CANVAS
-                </span>
-              </div>
-              <h3 className="text-base font-bold text-white group-hover:text-teal-300 transition">
-                Interactive Network Graph
-              </h3>
-              <p className="text-xs text-setu-textMuted leading-relaxed">
-                Physics-driven zoomable canvas. Click any node for entity details or click any edge for plain-language XAI reasoning and source citations.
-              </p>
-            </div>
-            <button
-              onClick={() => setActiveView('graph')}
-              className="flex items-center justify-between w-full pt-3 border-t border-setu-border/50 text-xs font-semibold text-teal-300 hover:text-white transition"
-            >
-              <span>Open Network Graph</span>
-              <ChevronRight className="w-4 h-4 text-teal-400 group-hover:translate-x-1 transition" />
-            </button>
-          </div>
-
-          {/* Feature 3: Timeline Analysis */}
-          <div className="bg-setu-surface border border-setu-border hover:border-teal-500/60 rounded-xl p-5 flex flex-col justify-between space-y-4 transition shadow-sm group">
-            <div className="space-y-2.5">
-              <div className="flex items-center justify-between">
-                <div className="p-2.5 rounded-lg bg-teal-950/60 border border-teal-500/40 text-teal-400">
-                  <Clock className="w-5 h-5" />
-                </div>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-slate-400">
-                  MULTI-STREAM
-                </span>
-              </div>
-              <h3 className="text-base font-bold text-white group-hover:text-teal-300 transition">
-                Chronological Timeline
-              </h3>
-              <p className="text-xs text-setu-textMuted leading-relaxed">
-                Multi-lane horizontal sequence aligning CDR call bursts, FASTag checkpoint debits, RTGS remittances, and CCTV sightings in time order.
-              </p>
-            </div>
-            <button
-              onClick={() => setActiveView('timeline')}
-              className="flex items-center justify-between w-full pt-3 border-t border-setu-border/50 text-xs font-semibold text-teal-300 hover:text-white transition"
-            >
-              <span>Explore Event Timeline</span>
-              <ChevronRight className="w-4 h-4 text-teal-400 group-hover:translate-x-1 transition" />
-            </button>
-          </div>
-
-          {/* Feature 4: Case Workspace */}
-          <div className="bg-setu-surface border border-setu-border hover:border-teal-500/60 rounded-xl p-5 flex flex-col justify-between space-y-4 transition shadow-sm group">
-            <div className="space-y-2.5">
-              <div className="flex items-center justify-between">
-                <div className="p-2.5 rounded-lg bg-teal-950/60 border border-teal-500/40 text-teal-400">
-                  <LayoutGrid className="w-5 h-5" />
-                </div>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-slate-400">
-                  PINBOARD + PDF
-                </span>
-              </div>
-              <h3 className="text-base font-bold text-white group-hover:text-teal-300 transition">
-                Case Workspace & Dossier
-              </h3>
-              <p className="text-xs text-setu-textMuted leading-relaxed">
-                Organize pinned suspects and lead hypotheses across 4 case stages. Generate formal court-admissible dossiers certified under Section 65B IEA.
-              </p>
-            </div>
-            <button
-              onClick={() => setActiveView('workspace')}
-              className="flex items-center justify-between w-full pt-3 border-t border-setu-border/50 text-xs font-semibold text-teal-300 hover:text-white transition"
-            >
-              <span>Open Case Workspace</span>
-              <ChevronRight className="w-4 h-4 text-teal-400 group-hover:translate-x-1 transition" />
-            </button>
-          </div>
-
-          {/* Feature 5: Entity Profile */}
-          <div className="bg-setu-surface border border-setu-border hover:border-teal-500/60 rounded-xl p-5 flex flex-col justify-between space-y-4 transition shadow-sm group">
-            <div className="space-y-2.5">
-              <div className="flex items-center justify-between">
-                <div className="p-2.5 rounded-lg bg-teal-950/60 border border-teal-500/40 text-teal-400">
-                  <FileText className="w-5 h-5" />
-                </div>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-slate-400">
-                  4 WORKSPACES
-                </span>
-              </div>
-              <h3 className="text-base font-bold text-white group-hover:text-teal-300 transition">
-                360° Entity Profiles
-              </h3>
-              <p className="text-xs text-setu-textMuted leading-relaxed">
-                4-tabbed dossier workspace covering 1st-degree connections, chronological movements, certified source documents, and officer case diary notes.
-              </p>
-            </div>
-            <button
-              onClick={() => setActiveView('entity-profile')}
-              className="flex items-center justify-between w-full pt-3 border-t border-setu-border/50 text-xs font-semibold text-teal-300 hover:text-white transition"
-            >
-              <span>View Entity Profiles</span>
-              <ChevronRight className="w-4 h-4 text-teal-400 group-hover:translate-x-1 transition" />
-            </button>
-          </div>
-
-          {/* Feature 6: Cryptographic Audit Vault */}
-          <div className="bg-setu-surface border border-setu-border hover:border-teal-500/60 rounded-xl p-5 flex flex-col justify-between space-y-4 transition shadow-sm group">
-            <div className="space-y-2.5">
-              <div className="flex items-center justify-between">
-                <div className="p-2.5 rounded-lg bg-teal-950/60 border border-teal-500/40 text-teal-400">
-                  <ShieldAlert className="w-5 h-5" />
-                </div>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-950 border border-amber-700 text-amber-300">
-                  ADMIN ONLY
-                </span>
-              </div>
-              <h3 className="text-base font-bold text-white group-hover:text-teal-300 transition">
-                Tamper-Evident Audit Ledger
-              </h3>
-              <p className="text-xs text-setu-textMuted leading-relaxed">
-                Immutable, append-only log of every search, graph inspection, and export linked via SHA-256 HMAC hash pointers. Instant cryptographic seal verification.
-              </p>
-            </div>
-            <button
-              onClick={() => setActiveView('audit-log')}
-              className="flex items-center justify-between w-full pt-3 border-t border-setu-border/50 text-xs font-semibold text-teal-300 hover:text-white transition"
-            >
-              <span>Inspect Audit Trail</span>
-              <ChevronRight className="w-4 h-4 text-teal-400 group-hover:translate-x-1 transition" />
-            </button>
-          </div>
-        </div>
-      </section>
-
-      {/* 5. LIVE CASE STUDY SHOWCASE (OPERATION NORTHERN HAUL) */}
-      <section className="px-4 sm:px-6 py-12 border-t border-setu-border bg-[#0B101D]">
-        <div className="max-w-6xl mx-auto space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div>
-              <span className="text-xs font-mono uppercase tracking-widest text-amber-400 font-semibold">
-                Live Demonstration Scenario
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-mono px-2 py-1 rounded bg-amber-950/80 border border-amber-800/60 text-amber-300 font-semibold">
+                PRIORITY: HIGH / INTER-STATE
               </span>
-              <h2 className="text-2xl font-bold text-white tracking-tight">
-                Case Study: Operation Northern Haul (FIR #492/2024)
+              <button
+                onClick={handleLaunchCaseStudy}
+                className="flex items-center gap-1.5 px-3 py-1 rounded bg-amber-600 hover:bg-amber-500 text-slate-950 text-xs font-semibold font-mono transition"
+              >
+                <span>LOAD CASE GRAPH</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs font-mono">
+            <div className="p-3 rounded bg-setu-card border border-setu-border space-y-1">
+              <div className="text-setu-textMuted text-[10px] uppercase">Jurisdiction & Unit</div>
+              <div className="text-slate-200 font-medium font-sans">{caseOverview.jurisdiction}</div>
+              <div className="text-[11px] text-slate-400">Investigating Officer: Badges #4120 / #1088</div>
+            </div>
+
+            <div className="p-3 rounded bg-setu-card border border-setu-border space-y-1">
+              <div className="text-setu-textMuted text-[10px] uppercase">Incident Timestamp & Sections</div>
+              <div className="text-slate-200 font-sans">{caseOverview.incidentDate}</div>
+              <div className="text-[11px] text-slate-400 truncate">{caseOverview.sections.join(', ')}</div>
+            </div>
+
+            <div className="p-3 rounded bg-setu-card border border-setu-border space-y-1">
+              <div className="text-setu-textMuted text-[10px] uppercase">Cross-Border Leads</div>
+              <div className="text-amber-300 font-semibold">2 Unreviewed Algorithmic Leads</div>
+              <div className="text-[11px] text-slate-400">Matches Cyberabad FIR #118/2023 via shared decoy vehicle</div>
+            </div>
+          </div>
+
+          <div className="bg-[#05080F] border border-setu-border/80 rounded p-3 text-xs font-sans text-slate-300 leading-relaxed">
+            <strong className="text-white font-mono text-xs uppercase mr-2">Case Summary:</strong>
+            Armed hijack of gold transit consignment on Yamuna Expressway. Mastermind operated via encrypted burner MSISDN. Vehicle registry correlation and cell tower azimuth overlap resolved decoy vehicle passages and hawala account routing across three state jurisdictions.
+          </div>
+        </div>
+
+        {/* 5. OPERATIONAL WORKSTATIONS (TACTICAL DISPATCH MATRIX) */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between border-b border-setu-border pb-2">
+            <div>
+              <h2 className="text-xs font-mono uppercase tracking-wider text-slate-400 font-semibold flex items-center gap-2">
+                <LayoutGrid className="w-3.5 h-3.5 text-teal-400" />
+                Investigative Workstations
               </h2>
+              <p className="text-xs text-setu-textMuted font-sans">
+                Select an operational console to begin record correlation or case analysis.
+              </p>
             </div>
-            <button
-              onClick={handleLaunchCaseStudy}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold transition self-start sm:self-auto shadow-lg"
-            >
-              <Share2 className="w-3.5 h-3.5" />
-              Load This Case on Graph
-            </button>
+            <span className="text-[11px] font-mono text-slate-500">6 TOOLS READY</span>
           </div>
 
-          <div className="bg-setu-surface border border-setu-border rounded-xl p-6 space-y-5">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-              {/* Case Summary */}
-              <div className="lg:col-span-1 space-y-3 bg-slate-900/60 p-4 rounded-lg border border-setu-border">
-                <div className="text-xs font-mono text-teal-400 font-semibold uppercase">
-                  Incident Docket
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {/* Workstation 1: Universal Search */}
+            <div className="bg-setu-surface border border-setu-border rounded-lg p-4 flex flex-col justify-between space-y-3">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-xs font-mono font-bold text-white">
+                    <div className="p-1.5 rounded bg-teal-950 border border-teal-600/50 text-teal-400">
+                      <Search className="w-4 h-4" />
+                    </div>
+                    <span>UNIVERSAL ENTITY RESOLVER</span>
+                  </div>
+                  <kbd className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-slate-900 border border-slate-700 text-slate-400">
+                    KEY: /
+                  </kbd>
                 </div>
-                <div className="text-sm font-bold text-white">
-                  ₹4.2 Cr Electronics Freight Hijack
-                </div>
-                <p className="text-xs text-slate-300 leading-relaxed">
-                  High-value electronics container forced off the road at Sector 18 Noida bypass. GPS wires cut at 23:45 IST; cargo trans-shipped to a decoy carrier.
+                <p className="text-xs text-slate-300 leading-relaxed font-sans">
+                  Accepts MSISDNs, IMEIs, vehicle registration plates, bank account numbers, aliases, or FIR case numbers with heuristic type detection.
                 </p>
-                <div className="pt-2 border-t border-setu-border/60 text-[11px] font-mono text-setu-textMuted space-y-1">
-                  <div>PS: Sector 20 Gautam Buddha Nagar</div>
-                  <div>Sections: BNS 303(2), 310(2), 111</div>
-                  <div>IO: Inspector S. Rawat (SC-1142)</div>
-                </div>
               </div>
+              <button
+                onClick={() => setActiveView('search')}
+                className="w-full py-1.5 px-3 rounded bg-setu-card hover:bg-slate-800 border border-setu-border text-xs font-mono font-semibold text-teal-300 hover:text-white flex items-center justify-between transition"
+              >
+                <span>Open Universal Search</span>
+                <ChevronRight className="w-4 h-4 text-teal-400" />
+              </button>
+            </div>
 
-              {/* Fragmented Evidence Connected */}
-              <div className="lg:col-span-2 space-y-3">
-                <div className="text-xs font-mono text-slate-400 uppercase">
-                  How SETU Connected 5 Fragmented Silos
+            {/* Workstation 2: Network Topology Graph */}
+            <div className="bg-setu-surface border border-setu-border rounded-lg p-4 flex flex-col justify-between space-y-3">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-xs font-mono font-bold text-white">
+                    <div className="p-1.5 rounded bg-teal-950 border border-teal-600/50 text-teal-400">
+                      <Share2 className="w-4 h-4" />
+                    </div>
+                    <span>TOPOLOGY LINK GRAPH</span>
+                  </div>
+                  <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-amber-950 border border-amber-800 text-amber-300">
+                    2 LEADS
+                  </span>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
-                  <div className="p-3 rounded-lg bg-slate-900/80 border border-setu-border space-y-1">
-                    <div className="font-semibold text-teal-300 flex items-center gap-1.5 font-mono">
-                      <Phone className="w-3.5 h-3.5" />
-                      Burner SIM & Call Burst
-                    </div>
-                    <p className="text-slate-300 text-[11px]">
-                      SIM +91 98110 29481 activated under forged CAF placed 14 calls to driver Kabir Deshmukh during heist window.
-                    </p>
-                  </div>
+                <p className="text-xs text-slate-300 leading-relaxed font-sans">
+                  Interactive multi-hop network graph rendered at 60 FPS on HTML5 Canvas. Inspect grounded plain-language explanations for every connection.
+                </p>
+              </div>
+              <button
+                onClick={() => setActiveView('graph')}
+                className="w-full py-1.5 px-3 rounded bg-setu-card hover:bg-slate-800 border border-setu-border text-xs font-mono font-semibold text-teal-300 hover:text-white flex items-center justify-between transition"
+              >
+                <span>Launch Link Graph</span>
+                <ChevronRight className="w-4 h-4 text-teal-400" />
+              </button>
+            </div>
 
-                  <div className="p-3 rounded-lg bg-slate-900/80 border border-setu-border space-y-1">
-                    <div className="font-semibold text-amber-300 flex items-center gap-1.5 font-mono">
-                      <Truck className="w-3.5 h-3.5" />
-                      Decoy Truck & FASTag Hit
+            {/* Workstation 3: Spatio-Temporal Timeline */}
+            <div className="bg-setu-surface border border-setu-border rounded-lg p-4 flex flex-col justify-between space-y-3">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-xs font-mono font-bold text-white">
+                    <div className="p-1.5 rounded bg-teal-950 border border-teal-600/50 text-teal-400">
+                      <Clock className="w-4 h-4" />
                     </div>
-                    <p className="text-slate-300 text-[11px]">
-                      Decoy Tata 407 (DL-01-AB-1234) passed Murthal toll at 01:14 IST with driver phone collocated within 30 seconds.
-                    </p>
+                    <span>TEMPORAL SIGNAL TIMELINE</span>
                   </div>
-
-                  <div className="p-3 rounded-lg bg-slate-900/80 border border-setu-border space-y-1">
-                    <div className="font-semibold text-emerald-300 flex items-center gap-1.5 font-mono">
-                      <CreditCard className="w-3.5 h-3.5" />
-                      Hawala Cash Settlement
-                    </div>
-                    <p className="text-slate-300 text-[11px]">
-                      ₹85,00,000 RTGS credited to Tariq Ahmed's shell company 'Blue Star Cargo' and liquidated across 14 mule accounts.
-                    </p>
-                  </div>
-
-                  <div className="p-3 rounded-lg bg-slate-900/80 border border-setu-border space-y-1">
-                    <div className="font-semibold text-blue-300 flex items-center gap-1.5 font-mono">
-                      <Layers className="w-3.5 h-3.5" />
-                      Cross-Jurisdiction Overlap
-                    </div>
-                    <p className="text-slate-300 text-[11px]">
-                      Decoy truck DL-01-AB-1234 flagged as the exact same vehicle used in Cyberabad FIR #118/2023 robbery.
-                    </p>
-                  </div>
+                  <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-slate-900 border border-slate-700 text-slate-400">
+                    5 LANES
+                  </span>
                 </div>
+                <p className="text-xs text-slate-300 leading-relaxed font-sans">
+                  Multi-lane chronological tracking of telephony call bursts, tower azimuth handovers, highway FASTag toll crossings, and bank transfers.
+                </p>
+              </div>
+              <button
+                onClick={() => setActiveView('timeline')}
+                className="w-full py-1.5 px-3 rounded bg-setu-card hover:bg-slate-800 border border-setu-border text-xs font-mono font-semibold text-teal-300 hover:text-white flex items-center justify-between transition"
+              >
+                <span>Open Timeline View</span>
+                <ChevronRight className="w-4 h-4 text-teal-400" />
+              </button>
+            </div>
+
+            {/* Workstation 4: Case Workspace & Dossier Export */}
+            <div className="bg-setu-surface border border-setu-border rounded-lg p-4 flex flex-col justify-between space-y-3">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-xs font-mono font-bold text-white">
+                    <div className="p-1.5 rounded bg-teal-950 border border-teal-600/50 text-teal-400">
+                      <LayoutGrid className="w-4 h-4" />
+                    </div>
+                    <span>EVIDENCE PINBOARD & DOSSIER</span>
+                  </div>
+                  <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-emerald-950 border border-emerald-800 text-emerald-300">
+                    SEC 65B/63 BSA
+                  </span>
+                </div>
+                <p className="text-xs text-slate-300 leading-relaxed font-sans">
+                  Curate pinned entities and verified leads into investigation columns. Export court-ready judicial dossiers with digital signatures.
+                </p>
+              </div>
+              <button
+                onClick={() => setActiveView('workspace')}
+                className="w-full py-1.5 px-3 rounded bg-setu-card hover:bg-slate-800 border border-setu-border text-xs font-mono font-semibold text-teal-300 hover:text-white flex items-center justify-between transition"
+              >
+                <span>Access Case Workspace</span>
+                <ChevronRight className="w-4 h-4 text-teal-400" />
+              </button>
+            </div>
+
+            {/* Workstation 5: Subject Profiles */}
+            <div className="bg-setu-surface border border-setu-border rounded-lg p-4 flex flex-col justify-between space-y-3">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-xs font-mono font-bold text-white">
+                    <div className="p-1.5 rounded bg-teal-950 border border-teal-600/50 text-teal-400">
+                      <FileCheck className="w-4 h-4" />
+                    </div>
+                    <span>360° ENTITY PROFILES</span>
+                  </div>
+                  <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-slate-900 border border-slate-700 text-slate-400">
+                    12 ENTITIES
+                  </span>
+                </div>
+                <p className="text-xs text-slate-300 leading-relaxed font-sans">
+                  Deep dossier view showing identifier tokens, connected FIR records, communication timelines, and linked associates for any entity.
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  selectEntity('ent-person-1');
+                  setActiveView('entity-profile');
+                }}
+                className="w-full py-1.5 px-3 rounded bg-setu-card hover:bg-slate-800 border border-setu-border text-xs font-mono font-semibold text-teal-300 hover:text-white flex items-center justify-between transition"
+              >
+                <span>Inspect Suspect Profile</span>
+                <ChevronRight className="w-4 h-4 text-teal-400" />
+              </button>
+            </div>
+
+            {/* Workstation 6: WORM Cryptographic Audit Log */}
+            <div className="bg-setu-surface border border-setu-border rounded-lg p-4 flex flex-col justify-between space-y-3">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-xs font-mono font-bold text-white">
+                    <div className="p-1.5 rounded bg-slate-900 border border-slate-700 text-amber-400">
+                      <ShieldAlert className="w-4 h-4" />
+                    </div>
+                    <span>CRYPTOGRAPHIC AUDIT VAULT</span>
+                  </div>
+                  <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-red-950/80 border border-red-800 text-red-300">
+                    RBAC GATED
+                  </span>
+                </div>
+                <p className="text-xs text-slate-300 leading-relaxed font-sans">
+                  Append-only, SHA-256 HMAC hash-chained ledger. Logs every officer search, graph view, lead review, and dossier export with non-repudiation.
+                </p>
+              </div>
+              <button
+                onClick={() => setActiveView('audit-log')}
+                className="w-full py-1.5 px-3 rounded bg-setu-card hover:bg-slate-800 border border-setu-border text-xs font-mono font-semibold text-teal-300 hover:text-white flex items-center justify-between transition"
+              >
+                <span>Inspect Audit Ledger</span>
+                <ChevronRight className="w-4 h-4 text-teal-400" />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* 6. TECHNICAL RESOLUTION PROTOCOL (DATA MATRIX) */}
+        <div className="bg-setu-surface border border-setu-border rounded-lg p-5 space-y-4">
+          <div className="border-b border-setu-border pb-2">
+            <h2 className="text-xs font-mono uppercase tracking-wider text-slate-400 font-semibold flex items-center gap-2">
+              <SlidersHorizontal className="w-3.5 h-3.5 text-teal-400" />
+              Entity Resolution Protocol & Grounding Standards
+            </h2>
+            <p className="text-xs text-setu-textMuted font-sans">
+              Objective technical matching tiers used to correlate identities across disparate police databases.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="p-3.5 rounded bg-setu-card/70 border border-setu-border space-y-2">
+              <div className="flex items-center justify-between text-xs font-mono font-bold text-teal-300">
+                <span>TIER 1: DETERMINISTIC MATCH</span>
+                <span className="text-[10px] text-emerald-400">100% REGISTRY</span>
+              </div>
+              <p className="text-xs text-slate-300 leading-relaxed font-sans">
+                Exact matches on high-entropy unique identifiers: MSISDN (+91-E.164), 15-digit IMEI, FASTag EPC tokens, Vehicle registration plates, Bank account numbers.
+              </p>
+              <div className="text-[10px] font-mono text-slate-400 pt-1 border-t border-setu-border/60">
+                Evidentiary Weight: Official Registry Record
+              </div>
+            </div>
+
+            <div className="p-3.5 rounded bg-setu-card/70 border border-setu-border space-y-2">
+              <div className="flex items-center justify-between text-xs font-mono font-bold text-amber-300">
+                <span>TIER 2: PHONETIC & ALIAS MATCH</span>
+                <span className="text-[10px] text-amber-400">SCORE ≥ 0.82</span>
+              </div>
+              <p className="text-xs text-slate-300 leading-relaxed font-sans">
+                Jaro-Winkler string similarity combined with police alias dictionaries and jurisdictional overlap to match phonetic variants of suspect names across state FIRs.
+              </p>
+              <div className="text-[10px] font-mono text-slate-400 pt-1 border-t border-setu-border/60">
+                Evidentiary Weight: Probabilistic Lead (Needs Corroboration)
+              </div>
+            </div>
+
+            <div className="p-3.5 rounded bg-setu-card/70 border border-setu-border space-y-2">
+              <div className="flex items-center justify-between text-xs font-mono font-bold text-cyan-300">
+                <span>TIER 3: SPATIO-TEMPORAL OVERLAP</span>
+                <span className="text-[10px] text-cyan-400">Δt ≤ 15m / R ≤ 500m</span>
+              </div>
+              <p className="text-xs text-slate-300 leading-relaxed font-sans">
+                Cell tower azimuth sector triangulation and highway toll sensor timestamps correlating physical co-presence during the crime execution window.
+              </p>
+              <div className="text-[10px] font-mono text-slate-400 pt-1 border-t border-setu-border/60">
+                Evidentiary Weight: Circumstantial Co-Location Lead
               </div>
             </div>
           </div>
         </div>
-      </section>
 
-      {/* 6. RESPONSIBLE AI & LEGAL COMPLIANCE */}
-      <section className="px-4 sm:px-6 py-12 max-w-6xl mx-auto space-y-6">
-        <div className="text-center max-w-2xl mx-auto space-y-1">
-          <div className="text-xs font-mono uppercase tracking-widest text-emerald-400 font-semibold">
-            Evidentiary Admissibility
-          </div>
-          <h2 className="text-2xl font-bold text-white tracking-tight">
-            The 4 Non-Negotiable Human Oversight Safeguards
-          </h2>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
-          <div className="bg-setu-surface border border-setu-border p-4 rounded-xl space-y-2">
-            <div className="font-bold text-teal-300 font-mono flex items-center gap-1.5">
-              <Shield className="w-4 h-4 text-teal-400" />
-              "Lead" Labeling Only
-            </div>
-            <p className="text-slate-300 leading-relaxed text-[11px]">
-              Every AI-generated link visibly carries the word "lead" or "possible connection," never "match confirmed" or "guilty."
-            </p>
+        {/* 7. STATUTORY EVIDENTIARY SAFEGUARDS */}
+        <div className="border border-setu-border rounded-lg p-5 bg-[#05080F] space-y-3">
+          <div className="flex items-center gap-2 text-xs font-mono font-semibold text-emerald-400 uppercase">
+            <CheckCircle2 className="w-4 h-4" />
+            <span>Statutory Evidentiary Safeguards (IEA Sec 65B / BSA Sec 63 Compliance)</span>
           </div>
 
-          <div className="bg-setu-surface border border-setu-border p-4 rounded-xl space-y-2">
-            <div className="font-bold text-amber-300 font-mono flex items-center gap-1.5">
-              <SlidersHorizontal className="w-4 h-4 text-amber-400" />
-              Qualitative Confidence
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+            <div className="p-2.5 rounded bg-setu-surface/60 border border-setu-border/60 space-y-1">
+              <strong className="text-white font-mono block">1. Lead-Only Inferences</strong>
+              <p className="text-slate-400 leading-relaxed">
+                Algorithmic outputs are labeled strictly as "Lead (Possible Connection)". Never framed as "confirmed match" or guilt.
+              </p>
             </div>
-            <p className="text-slate-300 leading-relaxed text-[11px]">
-              Confidence is always displayed as a qualitative band (Strong / Moderate / Weak signal) alongside numeric ranges—never bare percentages.
-            </p>
-          </div>
 
-          <div className="bg-setu-surface border border-setu-border p-4 rounded-xl space-y-2">
-            <div className="font-bold text-cyan-300 font-mono flex items-center gap-1.5">
-              <FileCheck className="w-4 h-4 text-cyan-400" />
-              Zero Dead-End Output
+            <div className="p-2.5 rounded bg-setu-surface/60 border border-setu-border/60 space-y-1">
+              <strong className="text-white font-mono block">2. Dual Confidence Rating</strong>
+              <p className="text-slate-400 leading-relaxed">
+                Displays qualitative confidence bands alongside numeric ranges to prevent false mathematical certainty in court.
+              </p>
             </div>
-            <p className="text-slate-300 leading-relaxed text-[11px]">
-              Every connection is clickable through to underlying certified raw evidence (CDR dumps, FIR text, Vahan records, bank ledgers).
-            </p>
-          </div>
 
-          <div className="bg-setu-surface border border-setu-border p-4 rounded-xl space-y-2">
-            <div className="font-bold text-emerald-300 font-mono flex items-center gap-1.5">
-              <Award className="w-4 h-4 text-emerald-400" />
-              Sec 65B Certification
+            <div className="p-2.5 rounded bg-setu-surface/60 border border-setu-border/60 space-y-1">
+              <strong className="text-white font-mono block">3. Grounded Citations</strong>
+              <p className="text-slate-400 leading-relaxed">
+                Every generated explanation cites exact document line items and certified electronic exhibits for judicial inspection.
+              </p>
             </div>
-            <p className="text-slate-300 leading-relaxed text-[11px]">
-              Official dossier exports include statutory Section 65B Indian Evidence Act / Section 63 BSA compliance blocks and officer signatures.
-            </p>
+
+            <div className="p-2.5 rounded bg-setu-surface/60 border border-setu-border/60 space-y-1">
+              <strong className="text-white font-mono block">4. Non-Repudiation WORM</strong>
+              <p className="text-slate-400 leading-relaxed">
+                Officer decisions are sealed into an append-only SHA-256 HMAC ledger to establish an untampered chain of custody.
+              </p>
+            </div>
           </div>
         </div>
-      </section>
-
-      {/* 7. BOTTOM TACTICAL LAUNCHER */}
-      <section className="px-4 sm:px-6 pt-6 max-w-6xl mx-auto">
-        <div className="p-8 rounded-2xl bg-gradient-to-r from-teal-950/80 via-setu-card to-slate-900 border-2 border-teal-500/40 text-center space-y-4 shadow-2xl">
-          <h3 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-            Ready to Investigate?
-          </h3>
-          <p className="text-xs sm:text-sm text-slate-300 max-w-lg mx-auto leading-relaxed">
-            Search any person, phone number, vehicle plate, bank account, or case docket to uncover hidden cross-jurisdiction criminal networks in seconds.
-          </p>
-          <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
-            <button
-              onClick={() => setActiveView('graph')}
-              className="flex items-center gap-2 px-6 py-3 rounded-lg bg-teal-600 hover:bg-teal-500 text-white text-sm font-semibold shadow-xl transition"
-            >
-              <Share2 className="w-4 h-4" />
-              Enter Operational Network Graph
-            </button>
-            <button
-              onClick={() => setActiveView('search')}
-              className="flex items-center gap-2 px-6 py-3 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 text-sm font-medium transition"
-            >
-              <Search className="w-4 h-4 text-teal-400" />
-              Search an Entity (Press /)
-            </button>
-          </div>
-        </div>
-      </section>
+      </div>
     </div>
   );
 };
