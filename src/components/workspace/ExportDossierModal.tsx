@@ -98,7 +98,7 @@ export const ExportDossierModal: React.FC<ExportDossierModalProps> = ({
               National Capital Region Combined Investigation Cell | State Police HQ
             </p>
             <div className="text-[10px] font-mono text-slate-500 pt-1">
-              SYSTEM FOR EXPLAINABLE TRACKING & UNIFICATION (SETU) REPORT ENGINE
+              SETU INVESTIGATION DOSSIER
             </div>
           </div>
 
@@ -340,7 +340,7 @@ export const ExportDossierModal: React.FC<ExportDossierModalProps> = ({
           {/* Officer Sign-off & Seal Block */}
           <div className="mt-8 pt-4 border-t-2 border-slate-400 flex items-center justify-between text-xs font-mono text-slate-800">
             <div>
-              <div>Generated via SETU Enterprise Intelligence Engine</div>
+              <div>Generated via SETU</div>
               <div>Security Hash: SHA256-492-OCT24-AUTH-OK</div>
               <div className="text-[10px] text-slate-500">Date: {new Date().toLocaleDateString('en-IN')}</div>
             </div>
