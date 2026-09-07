@@ -30,7 +30,7 @@ export const WorkflowStepper: React.FC = () => {
     {
       stepNumber: 1,
       title: 'Select Case',
-      desc: selectedCase.firNumber,
+      desc: selectedCase ? selectedCase.firNumber : 'No case selected',
       icon: <FolderOpen className="w-3.5 h-3.5" />,
       onClick: () => {
         setCaseSelectModalOpen(true);
@@ -152,7 +152,7 @@ export const WorkflowStepper: React.FC = () => {
 
         <div className="hidden xl:flex items-center gap-2 text-[11px] font-mono text-slate-400 shrink-0 pl-2">
           <span className="text-slate-500">Case:</span>
-          <span className="text-white font-semibold">{selectedCase.firNumber}</span>
+          <span className="text-white font-semibold">{selectedCase ? selectedCase.firNumber : 'No docket'}</span>
         </div>
       </div>
     </div>

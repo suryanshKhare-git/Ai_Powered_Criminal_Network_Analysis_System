@@ -36,20 +36,26 @@ export const Header: React.FC<HeaderProps> = () => {
       <div className="flex items-center gap-2.5 text-xs">
         <div className="flex items-center gap-2 text-slate-300">
           <FolderLock className="w-3.5 h-3.5 text-teal-400" />
-          <span className="font-mono font-semibold text-white">
-            {selectedCase.firNumber}
-          </span>
-          <span className="text-slate-600">/</span>
-          <span className="text-slate-300 font-medium truncate max-w-[200px] sm:max-w-[320px]">
-            {selectedCase.title}
-          </span>
+          {selectedCase ? (
+            <>
+              <span className="font-mono font-semibold text-white">
+                {selectedCase.firNumber}
+              </span>
+              <span className="text-slate-600">/</span>
+              <span className="text-slate-300 font-medium truncate max-w-[200px] sm:max-w-[320px]">
+                {selectedCase.title}
+              </span>
+            </>
+          ) : (
+            <span className="text-slate-400 font-sans">No investigation selected</span>
+          )}
         </div>
 
         <button
           onClick={() => setCaseSelectModalOpen(true)}
           className="px-2 py-0.5 rounded text-[11px] font-sans text-teal-400 hover:text-teal-300 hover:bg-slate-800/80 transition cursor-pointer"
         >
-          Change Case
+          {selectedCase ? 'Change Case' : 'Select Case'}
         </button>
       </div>
 

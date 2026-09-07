@@ -110,28 +110,37 @@ export const Sidebar: React.FC<SidebarProps> = ({ onOpenShortcuts }) => {
       <div className="p-3 border-b border-slate-800/80 bg-[#0E1420]/80">
         <div className="flex items-center justify-between mb-1.5 text-[10px] font-mono uppercase tracking-wider text-slate-400">
           <span className="flex items-center gap-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-            Active Case
+            <span className={`w-1.5 h-1.5 rounded-full ${selectedCase ? 'bg-emerald-400' : 'bg-slate-500'}`} />
+            {selectedCase ? 'Active Case' : 'No Active Case'}
           </span>
           <button
             onClick={() => setCaseSelectModalOpen(true)}
             className="text-teal-400 hover:text-teal-300 transition text-[10px] underline font-sans cursor-pointer"
           >
-            Switch
+            {selectedCase ? 'Switch' : 'Select'}
           </button>
         </div>
-        <div
-          onClick={() => setActiveView('cases')}
-          className="p-2 rounded-md bg-slate-900/90 border border-slate-800 hover:border-slate-700 transition cursor-pointer group"
-          title="Click to view full case overview"
-        >
-          <div className="text-xs font-semibold text-white group-hover:text-teal-300 transition truncate">
-            {selectedCase.firNumber}
+        {selectedCase ? (
+          <div
+            onClick={() => setActiveView('cases')}
+            className="p-2 rounded-md bg-slate-900/90 border border-slate-800 hover:border-slate-700 transition cursor-pointer group"
+            title="Click to view full case overview"
+          >
+            <div className="text-xs font-semibold text-white group-hover:text-teal-300 transition truncate">
+              {selectedCase.firNumber}
+            </div>
+            <div className="text-[11px] text-slate-400 truncate mt-0.5 font-sans">
+              {selectedCase.title}
+            </div>
           </div>
-          <div className="text-[11px] text-slate-400 truncate mt-0.5 font-sans">
-            {selectedCase.title}
-          </div>
-        </div>
+        ) : (
+          <button
+            onClick={() => setCaseSelectModalOpen(true)}
+            className="w-full p-2 text-left rounded-md bg-slate-900/50 border border-dashed border-slate-800 hover:border-slate-700 transition text-[11px] text-slate-400 hover:text-slate-300 cursor-pointer truncate"
+          >
+            Select a docket to begin...
+          </button>
+        )}
       </div>
 
       {/* Navigation Links */}

@@ -74,7 +74,7 @@ export const AnalysisProcessModal: React.FC = () => {
         {/* Case Info Banner */}
         <div className="px-5 py-2.5 bg-slate-900/80 border-b border-setu-border flex items-center justify-between text-xs font-mono">
           <span className="text-slate-400">Active Docket:</span>
-          <span className="text-white font-semibold">{selectedCase.firNumber}</span>
+          <span className="text-white font-semibold">{selectedCase ? selectedCase.firNumber : 'DOCKET PENDING'}</span>
         </div>
 
         {/* Body Progress & Steps */}

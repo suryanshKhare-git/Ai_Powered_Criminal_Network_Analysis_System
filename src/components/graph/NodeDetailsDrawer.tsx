@@ -114,7 +114,7 @@ export const NodeDetailsDrawer: React.FC<NodeDetailsDrawerProps> = ({ entity, on
         <div>
           <span className="text-[9px] font-mono uppercase text-slate-400 block">Case</span>
           <span className="text-xs font-mono font-bold text-slate-300 truncate block px-1">
-            {selectedCase.firNumber.split(' ')[0]}
+            {selectedCase ? selectedCase.firNumber.split(' ')[0] : 'N/A'}
           </span>
         </div>
       </div>

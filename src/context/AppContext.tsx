@@ -36,7 +36,7 @@ interface AppContextType {
   setRole: (roleId: string) => void;
   caseOverview: CaseOverview;
   cases: CaseOverview[];
-  selectedCase: CaseOverview;
+  selectedCase: CaseOverview | null;
   selectCase: (caseId: string) => void;
   workflowStep: number;
   setWorkflowStep: (step: number) => void;
@@ -105,7 +105,7 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentRole, setCurrentRoleState] = useState<UserRole>(USER_ROLES[0]);
   const [cases] = useState<CaseOverview[]>(AVAILABLE_CASES);
-  const [selectedCase, setSelectedCase] = useState<CaseOverview>(CURRENT_CASE);
+  const [selectedCase, setSelectedCase] = useState<CaseOverview | null>(null);
   const [caseOverview, setCaseOverview] = useState<CaseOverview>(CURRENT_CASE);
   const [workflowStep, setWorkflowStep] = useState<number>(1);
   const [activeView, setActiveView] = useState<AppView>('home');
@@ -460,7 +460,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const resetDemo = () => {
-    setSelectedCase(CURRENT_CASE);
+    setSelectedCase(null);
     setCaseOverview(CURRENT_CASE);
     setEntities(MOCK_ENTITIES);
     setEdges(MOCK_EDGES);

@@ -64,7 +64,7 @@ export const CaseSelectModal: React.FC = () => {
         {/* Case Cards List */}
         <div className="flex-1 overflow-y-auto p-5 space-y-3">
           {cases.map(caseItem => {
-            const isCurrent = caseItem.caseId === selectedCase.caseId;
+            const isCurrent = selectedCase ? caseItem.caseId === selectedCase.caseId : false;
 
             return (
               <div

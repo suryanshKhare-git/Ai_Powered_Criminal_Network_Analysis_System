@@ -113,7 +113,7 @@ export const AddDataModal: React.FC = () => {
 
         {/* Status banner */}
         <div className="px-5 py-2.5 bg-slate-900/70 border-b border-setu-border flex items-center justify-between text-xs font-mono text-slate-400">
-          <span>TARGET DOCKET: <strong className="text-teal-300">{selectedCase.firNumber}</strong></span>
+          <span>TARGET DOCKET: <strong className="text-teal-300">{selectedCase ? selectedCase.firNumber : 'NEW / UNASSIGNED'}</strong></span>
           <span className="flex items-center gap-1 text-emerald-400">
             <ShieldCheck className="w-3.5 h-3.5" />
             SHA-256 HASH VERIFIED

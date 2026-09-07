@@ -30,28 +30,53 @@ export const CaseManagementView: React.FC = () => {
     selectEntity,
     selectEdge,
     runNetworkAnalysis,
+    setCaseSelectModalOpen,
   } = useApp();
 
   const [activeTab, setActiveTab] = useState<'entities' | 'relationships' | 'activity'>('entities');
 
   const getEntityIcon = (type: string) => {
     switch (type) {
-      case 'person':
-        return <User className="w-3.5 h-3.5 text-cyan-400" />;
-      case 'phone':
-        return <Phone className="w-3.5 h-3.5 text-teal-400" />;
-      case 'vehicle':
+      case 'PERSON':
+        return <User className="w-3.5 h-3.5 text-teal-400" />;
+      case 'PHONE':
+        return <Phone className="w-3.5 h-3.5 text-sky-400" />;
+      case 'VEHICLE':
         return <Truck className="w-3.5 h-3.5 text-amber-400" />;
-      case 'account':
+      case 'ACCOUNT':
         return <CreditCard className="w-3.5 h-3.5 text-emerald-400" />;
-      case 'location':
-        return <MapPin className="w-3.5 h-3.5 text-purple-400" />;
-      case 'organization':
+      case 'LOCATION':
+        return <MapPin className="w-3.5 h-3.5 text-rose-400" />;
+      case 'COMPANY':
         return <Building2 className="w-3.5 h-3.5 text-indigo-400" />;
       default:
         return <FileText className="w-3.5 h-3.5 text-blue-400" />;
     }
   };
+
+  if (!selectedCase) {
+    return (
+      <div className="flex-1 flex items-center justify-center p-8 bg-[#0B0F17] text-slate-100 font-sans">
+        <div className="max-w-md w-full text-center space-y-4 p-8 rounded-lg bg-[#111827] border border-slate-800">
+          <div className="w-12 h-12 rounded-full bg-teal-950/80 border border-teal-800 text-teal-400 flex items-center justify-center mx-auto">
+            <FolderOpen className="w-6 h-6" />
+          </div>
+          <div className="space-y-1">
+            <h2 className="text-lg font-bold text-white">No Case Selected</h2>
+            <p className="text-xs text-slate-400">
+              Select an active case docket to view case details, entities, and relationship graphs.
+            </p>
+          </div>
+          <button
+            onClick={() => setCaseSelectModalOpen(true)}
+            className="h-10 px-5 rounded-md bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold shadow-sm transition cursor-pointer"
+          >
+            Select Case Docket
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex-1 overflow-y-auto bg-[#0B0F17] text-slate-100 p-6 space-y-6 select-none font-sans">

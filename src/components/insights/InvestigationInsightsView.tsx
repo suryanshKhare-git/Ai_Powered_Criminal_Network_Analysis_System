@@ -139,7 +139,7 @@ export const InvestigationInsightsView: React.FC = () => {
             Investigation Insights
           </h1>
           <p className="text-xs sm:text-sm text-slate-400 mt-1 max-w-3xl font-sans">
-            Corroborated relationship patterns and anomaly detections for {selectedCase.title} ({selectedCase.firNumber}).
+            Corroborated relationship patterns and anomaly detections{selectedCase ? ` for ${selectedCase.title} (${selectedCase.firNumber})` : ''}.
           </p>
         </div>
 

@@ -48,54 +48,81 @@ export const HomePage: React.FC = () => {
           <div className="h-3 w-px bg-slate-800 hidden sm:block" />
           <div className="flex items-center gap-2">
             <span className="text-slate-400">Entities:</span>
-            <span className="font-mono font-semibold text-white">{entities.length}</span>
+            <span className="font-mono font-semibold text-white">{selectedCase ? entities.length : '—'}</span>
           </div>
           <div className="h-3 w-px bg-slate-800 hidden sm:block" />
           <div className="flex items-center gap-2">
             <span className="text-slate-400">Relationships:</span>
-            <span className="font-mono font-semibold text-teal-400">{edges.length}</span>
+            <span className="font-mono font-semibold text-teal-400">{selectedCase ? edges.length : '—'}</span>
           </div>
           <div className="h-3 w-px bg-slate-800 hidden sm:block" />
           <div className="flex items-center gap-2">
             <span className="text-slate-400">Insights:</span>
-            <span className="font-mono font-semibold text-amber-400">{aiInsights.length}</span>
+            <span className="font-mono font-semibold text-amber-400">{selectedCase ? aiInsights.length : '—'}</span>
           </div>
         </div>
 
         {/* C. CURRENT INVESTIGATION (PRIMARY FOCUS) */}
-        <div className="p-6 rounded-lg bg-[#111827] border border-slate-800 space-y-4">
-          <div className="text-[11px] font-mono text-slate-400 uppercase tracking-wider font-semibold">
-            Current Investigation
-          </div>
-
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="space-y-1.5">
-              <div className="flex items-center gap-2.5">
-                <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-slate-900 border border-slate-700 text-teal-300">
-                  {selectedCase.firNumber}
-                </span>
-                <span className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-400">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                  Active
-                </span>
-              </div>
-              <h2 className="text-xl font-bold text-white tracking-tight">
-                {selectedCase.title}
-              </h2>
-              <div className="text-xs text-slate-400 font-mono">
-                Entities: {entities.length} <span className="text-slate-600 mx-1">|</span> Relationships: {edges.length}
-              </div>
+        {selectedCase ? (
+          <div className="p-6 rounded-lg bg-[#111827] border border-slate-800 space-y-4">
+            <div className="text-[11px] font-mono text-slate-400 uppercase tracking-wider font-semibold">
+              Current Investigation
             </div>
 
-            <button
-              onClick={() => setActiveView('cases')}
-              className="flex items-center justify-center gap-2 h-10 px-5 rounded-md bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold shadow-sm transition cursor-pointer shrink-0"
-            >
-              <span>Open Investigation</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="space-y-1.5">
+                <div className="flex items-center gap-2.5">
+                  <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-slate-900 border border-slate-700 text-teal-300">
+                    {selectedCase.firNumber}
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-400">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                    Active
+                  </span>
+                </div>
+                <h2 className="text-xl font-bold text-white tracking-tight">
+                  {selectedCase.title}
+                </h2>
+                <div className="text-xs text-slate-400 font-mono">
+                  Entities: {entities.length} <span className="text-slate-600 mx-1">|</span> Relationships: {edges.length}
+                </div>
+              </div>
+
+              <button
+                onClick={() => setActiveView('cases')}
+                className="flex items-center justify-center gap-2 h-10 px-5 rounded-md bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold shadow-sm transition cursor-pointer shrink-0"
+              >
+                <span>Open Investigation</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="p-6 rounded-lg bg-[#111827] border border-dashed border-slate-800 space-y-4">
+            <div className="text-[11px] font-mono text-slate-400 uppercase tracking-wider font-semibold">
+              Current Investigation
+            </div>
+
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="space-y-1">
+                <h2 className="text-base font-semibold text-slate-300">
+                  No investigation currently active
+                </h2>
+                <p className="text-xs text-slate-400">
+                  Select a case docket below or start a new case to load entity graphs and evidence.
+                </p>
+              </div>
+
+              <button
+                onClick={() => setCaseSelectModalOpen(true)}
+                className="flex items-center justify-center gap-2 h-9 px-4 rounded-md bg-slate-800 hover:bg-slate-700 text-white text-xs font-medium transition cursor-pointer shrink-0 border border-slate-700"
+              >
+                <FolderOpen className="w-3.5 h-3.5 text-teal-400" />
+                <span>Select Case</span>
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* D. RECENT CASES */}
         <div className="space-y-3">
@@ -114,7 +141,7 @@ export const HomePage: React.FC = () => {
               </thead>
               <tbody className="divide-y divide-slate-800/60">
                 {cases.map(c => {
-                  const isCurrent = c.caseId === selectedCase.caseId;
+                  const isCurrent = selectedCase ? c.caseId === selectedCase.caseId : false;
                   return (
                     <tr key={c.caseId} className="hover:bg-slate-800/40 transition">
                       <td className="py-3 px-4 font-medium text-slate-200">
