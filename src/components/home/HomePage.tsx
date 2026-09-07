@@ -16,23 +16,13 @@ export const HomePage: React.FC = () => {
     aiInsights,
   } = useApp();
 
-  const getGreeting = () => {
-    const hour = new Date().getHours();
-    if (hour >= 5 && hour < 12) return 'Good morning.';
-    if (hour >= 12 && hour < 17) return 'Good afternoon.';
-    return 'Good evening.';
-  };
-
   return (
     <div className="flex-1 overflow-y-auto bg-[#0B0F17] text-slate-100 p-8 sm:p-12 select-none font-sans">
       <div className="max-w-4xl mx-auto space-y-8">
         {/* A. HEADER */}
         <div className="space-y-1">
-          <div className="text-xs font-mono font-semibold tracking-wider text-teal-400 uppercase">
-            SETU
-          </div>
           <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
-            {getGreeting()}
+            SETU
           </h1>
           <p className="text-sm text-slate-400">
             {selectedCase
