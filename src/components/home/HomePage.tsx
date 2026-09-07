@@ -35,7 +35,9 @@ export const HomePage: React.FC = () => {
             {getGreeting()}
           </h1>
           <p className="text-sm text-slate-400">
-            Continue your investigation or select a case to begin.
+            {selectedCase
+              ? 'Continue your investigation or select a case to begin.'
+              : 'Choose an investigation docket below to begin.'}
           </p>
         </div>
 
@@ -62,7 +64,7 @@ export const HomePage: React.FC = () => {
           </div>
         </div>
 
-        {/* C. CURRENT INVESTIGATION (PRIMARY FOCUS) */}
+        {/* C. INVESTIGATION SECTION */}
         {selectedCase ? (
           <div className="p-6 rounded-lg bg-[#111827] border border-slate-800 space-y-4">
             <div className="text-[11px] font-mono text-slate-400 uppercase tracking-wider font-semibold">
@@ -88,38 +90,107 @@ export const HomePage: React.FC = () => {
                 </div>
               </div>
 
-              <button
-                onClick={() => setActiveView('cases')}
-                className="flex items-center justify-center gap-2 h-10 px-5 rounded-md bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold shadow-sm transition cursor-pointer shrink-0"
-              >
-                <span>Open Investigation</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  onClick={() => setActiveView('cases')}
+                  className="flex items-center justify-center gap-2 h-10 px-5 rounded-md bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold shadow-sm transition cursor-pointer"
+                >
+                  <span>Open Investigation</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => setCaseSelectModalOpen(true)}
+                  className="h-10 px-3.5 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 text-xs font-medium transition cursor-pointer"
+                  title="Switch to another docket"
+                >
+                  Switch
+                </button>
+              </div>
             </div>
           </div>
         ) : (
-          <div className="p-6 rounded-lg bg-[#111827] border border-dashed border-slate-800 space-y-4">
-            <div className="text-[11px] font-mono text-slate-400 uppercase tracking-wider font-semibold">
-              Current Investigation
-            </div>
-
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div className="space-y-1">
-                <h2 className="text-base font-semibold text-slate-300">
-                  No investigation currently active
+          <div className="p-6 rounded-lg bg-[#111827] border border-slate-800 space-y-5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <div className="text-[11px] font-mono text-teal-400 uppercase tracking-wider font-semibold">
+                  SELECT INVESTIGATION
+                </div>
+                <h2 className="text-xl font-bold text-white tracking-tight mt-0.5">
+                  Choose a Case to Begin
                 </h2>
-                <p className="text-xs text-slate-400">
-                  Select a case docket below or start a new case to load entity graphs and evidence.
+                <p className="text-xs text-slate-400 mt-1">
+                  Select a case docket from the options below or choose from the dropdown.
                 </p>
               </div>
 
-              <button
-                onClick={() => setCaseSelectModalOpen(true)}
-                className="flex items-center justify-center gap-2 h-9 px-4 rounded-md bg-slate-800 hover:bg-slate-700 text-white text-xs font-medium transition cursor-pointer shrink-0 border border-slate-700"
-              >
-                <FolderOpen className="w-3.5 h-3.5 text-teal-400" />
-                <span>Select Case</span>
-              </button>
+              {/* Quick Case Selection Dropdown */}
+              <div className="flex items-center gap-2 shrink-0">
+                <select
+                  aria-label="Choose case docket"
+                  defaultValue=""
+                  onChange={e => {
+                    if (e.target.value) {
+                      selectCase(e.target.value);
+                      setActiveView('cases');
+                    }
+                  }}
+                  className="h-9 px-3 rounded-md bg-slate-900 border border-slate-700 text-xs text-slate-200 focus:outline-none focus:border-teal-500 cursor-pointer"
+                >
+                  <option value="" disabled>
+                    Choose case docket...
+                  </option>
+                  {cases.map(c => (
+                    <option key={c.caseId} value={c.caseId}>
+                      {c.firNumber} — {c.title}
+                    </option>
+                  ))}
+                </select>
+
+                <button
+                  onClick={() => setCaseSelectModalOpen(true)}
+                  className="flex items-center gap-1.5 h-9 px-3 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 text-xs font-medium transition cursor-pointer"
+                  title="Open Case Repository"
+                >
+                  <FolderOpen className="w-3.5 h-3.5 text-teal-400" />
+                  <span>Browse</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Direct 1-Click Selection Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+              {cases.map(c => (
+                <div
+                  key={c.caseId}
+                  onClick={() => {
+                    selectCase(c.caseId);
+                    setActiveView('cases');
+                  }}
+                  className="p-4 rounded-md bg-[#0E1420] border border-slate-800 hover:border-teal-500/70 hover:bg-slate-800/60 transition cursor-pointer group flex flex-col justify-between space-y-3"
+                >
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-mono font-bold text-teal-300">
+                        {c.firNumber}
+                      </span>
+                      <span className="text-[10px] font-mono text-emerald-400 font-semibold">
+                        ACTIVE
+                      </span>
+                    </div>
+                    <h3 className="text-sm font-semibold text-white group-hover:text-teal-300 transition line-clamp-2">
+                      {c.title}
+                    </h3>
+                    <p className="text-[11px] text-slate-400 line-clamp-2 leading-relaxed">
+                      {c.synopsis}
+                    </p>
+                  </div>
+
+                  <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between text-xs text-teal-400 font-medium">
+                    <span>Choose Case</span>
+                    <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition" />
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         )}
