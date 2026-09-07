@@ -2,177 +2,142 @@ import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { USER_ROLES } from '../../data/mockDataset';
 import {
-  Shield,
-  Moon,
-  ChevronDown,
   FolderLock,
-  Globe,
-  HelpCircle,
   Search,
-  CheckCircle2,
-  Lock,
-  AlertTriangle,
+  RotateCcw,
+  Tv,
+  X,
+  ChevronDown,
 } from 'lucide-react';
 
 interface HeaderProps {
-  onOpenShortcuts: () => void;
+  onOpenShortcuts?: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ onOpenShortcuts }) => {
-  const { currentRole, setRole, caseOverview, setActiveView } = useApp();
+export const Header: React.FC<HeaderProps> = () => {
+  const {
+    currentRole,
+    setRole,
+    selectedCase,
+    setActiveView,
+    setCaseSelectModalOpen,
+    resetDemo,
+    isPresentationMode,
+    togglePresentationMode,
+    demoToastMessage,
+    clearDemoToast,
+  } = useApp();
+
   const [roleMenuOpen, setRoleMenuOpen] = useState(false);
 
   return (
-    <header className="w-full bg-setu-surface border-b border-setu-border select-none no-print">
-      {/* Classification Banner */}
-      <div className="bg-[#05080F] border-b border-setu-border/60 px-4 py-1 flex items-center justify-between text-[11px] font-mono tracking-widest text-slate-400">
-        <div className="flex items-center gap-2">
-          <span className="inline-block w-2 h-2 rounded-full bg-teal-500 animate-pulse" />
-          <span className="text-teal-400/90 font-semibold">RESTRICTED // LAW ENFORCEMENT SENSITIVE</span>
-          <span className="text-slate-600">|</span>
-          <span className="hidden sm:inline">FOR AUTHORIZED INVESTIGATIVE USE ONLY</span>
-        </div>
-        <div className="flex items-center gap-3 text-slate-400">
-          <span className="hidden md:inline">SYSTEM: SETU v2.4-XAI</span>
-          <span className="text-slate-600 hidden md:inline">|</span>
-          <span className="text-emerald-400 flex items-center gap-1">
-            <CheckCircle2 className="w-3 h-3" />
-            EVIDENTIARY CHAIN AUDIT ACTIVE
+    <header className="h-12 w-full bg-[#0E1420] border-b border-slate-800/80 px-4 sm:px-6 flex items-center justify-between gap-4 select-none no-print">
+      {/* Left: Active Case Scope Context */}
+      <div className="flex items-center gap-2.5 text-xs">
+        <div className="flex items-center gap-2 text-slate-300">
+          <FolderLock className="w-3.5 h-3.5 text-teal-400" />
+          <span className="font-mono font-semibold text-white">
+            {selectedCase.firNumber}
+          </span>
+          <span className="text-slate-600">/</span>
+          <span className="text-slate-300 font-medium truncate max-w-[200px] sm:max-w-[320px]">
+            {selectedCase.title}
           </span>
         </div>
+
+        <button
+          onClick={() => setCaseSelectModalOpen(true)}
+          className="px-2 py-0.5 rounded text-[11px] font-sans text-teal-400 hover:text-teal-300 hover:bg-slate-800/80 transition cursor-pointer"
+        >
+          Change Case
+        </button>
       </div>
 
-      {/* Main Bar */}
-      <div className="px-4 py-3 flex items-center justify-between gap-4">
-        {/* Brand & Emblem (Clickable to Home) */}
+      {/* Right Controls: Quick Search, Presentation Mode, Reset, Role */}
+      <div className="flex items-center gap-2 sm:gap-3">
+        {/* Universal Search Hint Button */}
         <button
-          onClick={() => setActiveView('home')}
-          className="flex items-center gap-3 shrink-0 text-left hover:opacity-90 transition group cursor-pointer"
-          title="Return to Platform Overview"
+          onClick={() => setActiveView('search')}
+          className="hidden md:flex items-center gap-2 px-2.5 py-1 rounded bg-slate-900 border border-slate-800 text-slate-400 hover:text-slate-200 text-xs transition cursor-pointer"
+          title="Jump to Universal Search (or press /)"
         >
-          <div className="w-9 h-9 rounded bg-teal-950/80 border border-teal-500/50 flex items-center justify-center text-teal-400 shadow-inner group-hover:border-teal-400 transition">
-            <Shield className="w-5 h-5 text-teal-400" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-base font-bold tracking-wider text-white font-sans uppercase group-hover:text-teal-300 transition">
-                SETU <span className="text-teal-400 font-normal text-xs ml-1 tracking-normal font-mono">सेतु</span>
-              </h1>
-              <span className="text-[10px] px-1.5 py-0.5 rounded bg-teal-950 border border-teal-800/60 text-teal-300 font-mono">
-                XAI GRAPH
-              </span>
-            </div>
-            <p className="text-[10px] text-setu-textMuted tracking-tight">
-              Explainable Crime Network & Entity Resolution Engine
-            </p>
-          </div>
+          <Search className="w-3.5 h-3.5 text-slate-500" />
+          <span>Search entities...</span>
+          <kbd className="px-1 text-[10px] font-mono bg-slate-800 rounded text-slate-400">
+            /
+          </kbd>
         </button>
 
-        {/* Case Scope & Jurisdiction Bar */}
-        <div className="hidden lg:flex items-center gap-3 px-3 py-1.5 rounded-md bg-setu-card border border-setu-border/80 text-xs">
-          <div className="flex items-center gap-1.5 text-slate-300 font-medium">
-            <FolderLock className="w-3.5 h-3.5 text-teal-400" />
-            <span className="text-setu-textMuted">Case:</span>
-            <span className="text-white font-mono font-semibold">{caseOverview.firNumber}</span>
-          </div>
-          <span className="text-slate-600">|</span>
-          <div className="flex items-center gap-1.5 text-slate-300">
-            <Globe className="w-3.5 h-3.5 text-slate-400" />
-            <span className="text-setu-textMuted">Scope:</span>
-            <span className="truncate max-w-[280px]">{caseOverview.jurisdiction}</span>
-          </div>
-        </div>
+        {/* Demo Mode Toggle: PRESENT */}
+        <button
+          onClick={togglePresentationMode}
+          className={`flex items-center gap-1.5 h-7 px-2.5 rounded text-xs font-mono transition cursor-pointer ${
+            isPresentationMode
+              ? 'bg-amber-600 text-white font-bold'
+              : 'bg-slate-800 text-slate-400 hover:text-slate-200 border border-slate-700'
+          }`}
+          title="Toggle Large Typography & Canvas Scaling for Presentation Display"
+        >
+          <Tv className="w-3 h-3" />
+          <span>{isPresentationMode ? 'PRESENT ON' : 'PRESENT'}</span>
+        </button>
 
-        {/* Controls, RBAC Role Badge & Actions */}
-        <div className="flex items-center gap-2.5">
-          {/* Universal Search Quick Trigger Button */}
+        {/* Quick Reset Button */}
+        <button
+          onClick={resetDemo}
+          className="flex items-center gap-1.5 h-7 px-2 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-slate-200 text-xs transition cursor-pointer border border-slate-700"
+          title="Reset Demo Dataset to Baseline"
+        >
+          <RotateCcw className="w-3 h-3" />
+          <span className="hidden sm:inline">Reset</span>
+        </button>
+
+        {/* Role Switcher Dropdown */}
+        <div className="relative">
           <button
-            onClick={() => setActiveView('search')}
-            className="flex items-center gap-2 px-3 py-1.5 rounded bg-slate-900/80 hover:bg-slate-800 border border-setu-border text-xs text-setu-textMuted hover:text-white transition"
-            title="Search entities (Press /)"
+            onClick={() => setRoleMenuOpen(prev => !prev)}
+            className="flex items-center gap-1.5 h-7 px-2.5 rounded bg-slate-800 border border-slate-700 text-xs text-slate-200 hover:bg-slate-700 transition cursor-pointer font-mono"
+            title="Switch User Role"
           >
-            <Search className="w-3.5 h-3.5 text-teal-400" />
-            <span className="hidden sm:inline">Universal Search</span>
-            <kbd className="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-[10px] font-mono text-slate-400">
-              /
-            </kbd>
+            <span className="w-1.5 h-1.5 rounded-full bg-teal-400" />
+            <span className="font-semibold text-[11px]">{currentRole.title.toUpperCase()}</span>
+            <ChevronDown className="w-3 h-3 text-slate-400" />
           </button>
 
-          {/* RBAC Role Selector Dropdown */}
-          <div className="relative">
-            <button
-              onClick={() => setRoleMenuOpen(prev => !prev)}
-              className="flex items-center gap-2 px-3 py-1.5 rounded bg-setu-card hover:bg-slate-800/80 border border-teal-500/40 text-xs text-white transition shadow-sm"
-              title="Click to switch user role and test RBAC authorization"
-            >
-              <div className="w-2 h-2 rounded-full bg-teal-400" />
-              <div className="text-left">
-                <div className="text-[10px] text-teal-400/90 uppercase font-mono tracking-wider font-semibold">
-                  RBAC Gate
-                </div>
-                <div className="text-xs font-medium text-slate-200 truncate max-w-[160px] sm:max-w-[200px]">
-                  {currentRole.badge}
-                </div>
+          {roleMenuOpen && (
+            <div className="absolute right-0 top-full mt-1 w-52 bg-[#111827] border border-slate-800 rounded-md shadow-xl py-1 z-50">
+              <div className="px-3 py-1 text-[10px] font-mono uppercase text-slate-500 border-b border-slate-800">
+                Switch Operational Role
               </div>
-              <ChevronDown className="w-3.5 h-3.5 text-slate-400 ml-1" />
-            </button>
-
-            {roleMenuOpen && (
-              <div className="absolute right-0 mt-2 w-72 bg-setu-surface border border-setu-borderLight rounded-md shadow-2xl z-50 p-1 divide-y divide-setu-border/50">
-                <div className="px-3 py-2 text-[11px] text-setu-textMuted">
-                  Switch Active Role (RBAC Simulation)
-                </div>
-                <div className="py-1">
-                  {USER_ROLES.map(role => (
-                    <button
-                      key={role.id}
-                      onClick={() => {
-                        setRole(role.id);
-                        setRoleMenuOpen(false);
-                      }}
-                      className={`w-full text-left px-3 py-2 rounded text-xs transition flex flex-col gap-0.5 ${
-                        currentRole.id === role.id
-                          ? 'bg-teal-950/60 border border-teal-500/40 text-white'
-                          : 'hover:bg-slate-800/60 text-slate-300'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="font-semibold text-slate-200">{role.title}</span>
-                        {role.id === 'auditor' && (
-                          <span className="text-[10px] font-mono px-1 rounded bg-amber-950 border border-amber-700 text-amber-300">
-                            ADMIN ONLY
-                          </span>
-                        )}
-                      </div>
-                      <span className="text-[11px] text-setu-textMuted font-mono">{role.badge}</span>
-                      <span className="text-[10px] text-slate-500">{role.department}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Dark Mode Indicator with Moon Icon */}
-          <div
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded bg-setu-card border border-setu-border text-xs text-slate-300 select-none shadow-sm"
-            title="Operational Environment: High-Contrast Dark Mode"
-          >
-            <Moon className="w-3.5 h-3.5 text-teal-400" />
-            <span className="text-[11px] font-mono text-slate-300 hidden sm:inline">DARK MODE</span>
-          </div>
-
-          {/* Keyboard Shortcuts Guide */}
-          <button
-            onClick={onOpenShortcuts}
-            className="p-2 rounded bg-setu-card hover:bg-slate-800 border border-setu-border text-slate-300 hover:text-white transition"
-            title="Keyboard shortcuts (?)"
-            aria-label="Shortcuts"
-          >
-            <HelpCircle className="w-4 h-4 text-slate-400" />
-          </button>
+              {USER_ROLES.map(r => (
+                <button
+                  key={r.id}
+                  onClick={() => {
+                    setRole(r.id);
+                    setRoleMenuOpen(false);
+                  }}
+                  className={`w-full text-left px-3 py-1.5 text-xs flex items-center justify-between hover:bg-slate-800 transition cursor-pointer ${
+                    r.id === currentRole.id ? 'text-teal-300 font-semibold bg-slate-900/60' : 'text-slate-300'
+                  }`}
+                >
+                  <span>{r.title}</span>
+                  <span className="text-[10px] font-mono text-slate-500">{r.id.toUpperCase()}</span>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
+
+      {/* Floating Demo Toast if triggered */}
+      {demoToastMessage && (
+        <div className="fixed top-4 right-4 z-50 flex items-center gap-2 px-3 py-2 bg-slate-900 border border-teal-500/60 rounded shadow-xl text-xs font-mono text-teal-300 animate-fadeIn">
+          <span>{demoToastMessage}</span>
+          <button onClick={clearDemoToast} className="text-slate-400 hover:text-white ml-1 cursor-pointer">
+            <X className="w-3 h-3" />
+          </button>
+        </div>
+      )}
     </header>
   );
 };

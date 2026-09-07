@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Command, Keyboard } from 'lucide-react';
+import { X, Keyboard } from 'lucide-react';
 
 interface KeyboardShortcutsModalProps {
   isOpen: boolean;
@@ -22,8 +22,14 @@ export const KeyboardShortcutsModal: React.FC<KeyboardShortcutsModalProps> = ({ 
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
-      <div className="bg-setu-surface border border-setu-borderLight rounded-lg shadow-2xl max-w-lg w-full overflow-hidden text-setu-text">
+    <div
+      onClick={onClose}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn"
+    >
+      <div
+        onClick={e => e.stopPropagation()}
+        className="bg-setu-surface border border-setu-borderLight rounded-lg shadow-2xl max-w-lg w-full overflow-hidden text-setu-text"
+      >
         <div className="px-6 py-4 border-b border-setu-border flex items-center justify-between bg-setu-card/60">
           <div className="flex items-center gap-2.5">
             <Keyboard className="w-5 h-5 text-setu-accent" />

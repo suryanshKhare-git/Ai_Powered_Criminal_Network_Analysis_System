@@ -2,16 +2,23 @@ import React, { useState, useEffect } from 'react';
 import { AppProvider, useApp } from './context/AppContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { Header } from './components/layout/Header';
-import { Navigation } from './components/layout/Navigation';
+import { Sidebar } from './components/layout/Sidebar';
 import { HomePage } from './components/home/HomePage';
+import { CaseManagementView } from './components/cases/CaseManagementView';
 import { UniversalSearch } from './components/search/UniversalSearch';
 import { NetworkGraphView } from './components/graph/NetworkGraphView';
+import { InvestigationInsightsView } from './components/insights/InvestigationInsightsView';
 import { EntityProfileView } from './components/entity/EntityProfileView';
 import { TimelineView } from './components/timeline/TimelineView';
 import { CaseWorkspace } from './components/workspace/CaseWorkspace';
 import { AuditLogView } from './components/audit/AuditLogView';
 import { EvidenceSourceModal } from './components/common/EvidenceSourceModal';
 import { KeyboardShortcutsModal } from './components/common/KeyboardShortcutsModal';
+import { CaseSelectModal } from './components/common/CaseSelectModal';
+import { AddDataModal } from './components/common/AddDataModal';
+import { ExportDossierModal } from './components/workspace/ExportDossierModal';
+import { AnalysisProcessModal } from './components/common/AnalysisProcessModal';
+import { ScoringMethodologyModal } from './components/common/ScoringMethodologyModal';
 
 const MainContent: React.FC = () => {
   const {
@@ -20,6 +27,11 @@ const MainContent: React.FC = () => {
     selectEntity,
     selectEdge,
     closeEvidenceModal,
+    setCaseSelectModalOpen,
+    setAddDataModalOpen,
+    setReportModalOpen,
+    setMethodologyModalOpen,
+    setAnalysisModalOpen,
   } = useApp();
 
   const [shortcutsOpen, setShortcutsOpen] = useState<boolean>(false);
@@ -27,7 +39,6 @@ const MainContent: React.FC = () => {
   // Global Keyboard Shortcuts Listener
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Don't intercept if user is typing in an input or textarea
       const targetTag = (e.target as HTMLElement)?.tagName?.toLowerCase();
       const isInput = targetTag === 'input' || targetTag === 'textarea' || (e.target as HTMLElement)?.isContentEditable;
 
@@ -35,6 +46,11 @@ const MainContent: React.FC = () => {
         selectEntity(null);
         selectEdge(null);
         closeEvidenceModal();
+        setCaseSelectModalOpen(false);
+        setAddDataModalOpen(false);
+        setReportModalOpen(false);
+        setMethodologyModalOpen(false);
+        setAnalysisModalOpen(false);
         setShortcutsOpen(false);
         return;
       }
@@ -58,19 +74,19 @@ const MainContent: React.FC = () => {
           setActiveView('home');
         } else if (e.key === '1') {
           e.preventDefault();
-          setActiveView('search');
+          setActiveView('cases');
         } else if (e.key === '2') {
           e.preventDefault();
-          setActiveView('graph');
+          setActiveView('search');
         } else if (e.key === '3') {
           e.preventDefault();
-          setActiveView('timeline');
+          setActiveView('graph');
         } else if (e.key === '4') {
           e.preventDefault();
-          setActiveView('workspace');
+          setActiveView('timeline');
         } else if (e.key === '5') {
           e.preventDefault();
-          setActiveView('entity-profile');
+          setActiveView('workspace');
         } else if (e.key === '6') {
           e.preventDefault();
           setActiveView('audit-log');
@@ -80,26 +96,41 @@ const MainContent: React.FC = () => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectEntity, selectEdge, closeEvidenceModal, setActiveView]);
+  }, [
+    selectEntity,
+    selectEdge,
+    closeEvidenceModal,
+    setActiveView,
+    setCaseSelectModalOpen,
+    setAddDataModalOpen,
+    setReportModalOpen,
+    setMethodologyModalOpen,
+    setAnalysisModalOpen,
+  ]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-setu-bg text-setu-text transition-colors duration-200">
-      {/* Top Header with RBAC & Jurisdiction */}
-      <Header onOpenShortcuts={() => setShortcutsOpen(true)} />
+    <div className="h-screen flex overflow-hidden bg-[#0B0F17] text-slate-100 font-sans">
+      {/* Enterprise Left Sidebar */}
+      <Sidebar onOpenShortcuts={() => setShortcutsOpen(true)} />
 
-      {/* Main Tabbed Navigation */}
-      <Navigation />
+      {/* Main Workspace Column */}
+      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
+        {/* Slim Top Context Bar */}
+        <Header />
 
-      {/* Screen Views */}
-      <main className="flex-1 flex flex-col">
-        {activeView === 'home' && <HomePage />}
-        {activeView === 'search' && <UniversalSearch />}
-        {activeView === 'graph' && <NetworkGraphView />}
-        {activeView === 'timeline' && <TimelineView />}
-        {activeView === 'workspace' && <CaseWorkspace />}
-        {activeView === 'entity-profile' && <EntityProfileView />}
-        {activeView === 'audit-log' && <AuditLogView />}
-      </main>
+        {/* Dynamic Screen Views */}
+        <main className="flex-1 flex flex-col min-w-0 overflow-y-auto">
+          {activeView === 'home' && <HomePage />}
+          {activeView === 'cases' && <CaseManagementView />}
+          {activeView === 'search' && <UniversalSearch />}
+          {activeView === 'graph' && <NetworkGraphView />}
+          {activeView === 'insights' && <InvestigationInsightsView />}
+          {activeView === 'timeline' && <TimelineView />}
+          {activeView === 'workspace' && <CaseWorkspace />}
+          {activeView === 'entity-profile' && <EntityProfileView />}
+          {activeView === 'audit-log' && <AuditLogView />}
+        </main>
+      </div>
 
       {/* Global Modals */}
       <EvidenceSourceModal />
@@ -107,6 +138,11 @@ const MainContent: React.FC = () => {
         isOpen={shortcutsOpen}
         onClose={() => setShortcutsOpen(false)}
       />
+      <CaseSelectModal />
+      <AddDataModal />
+      <ExportDossierModal />
+      <AnalysisProcessModal />
+      <ScoringMethodologyModal />
     </div>
   );
 };

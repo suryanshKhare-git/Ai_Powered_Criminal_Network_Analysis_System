@@ -1,6 +1,6 @@
 import React from 'react';
 import { useApp } from '../../context/AppContext';
-import { X, FileText, ShieldAlert, Award, Hash, Building2, Calendar } from 'lucide-react';
+import { X, FileText, Award, Hash, Building2, Calendar } from 'lucide-react';
 
 export const EvidenceSourceModal: React.FC = () => {
   const { inspectedRawRecord, closeEvidenceModal } = useApp();
@@ -8,8 +8,14 @@ export const EvidenceSourceModal: React.FC = () => {
   if (!inspectedRawRecord) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
-      <div className="bg-setu-surface border border-setu-borderLight rounded-lg shadow-2xl max-w-3xl w-full max-h-[88vh] flex flex-col overflow-hidden text-setu-text">
+    <div
+      onClick={closeEvidenceModal}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn"
+    >
+      <div
+        onClick={e => e.stopPropagation()}
+        className="bg-setu-surface border border-setu-borderLight rounded-lg shadow-2xl max-w-3xl w-full max-h-[88vh] flex flex-col overflow-hidden text-setu-text"
+      >
         {/* Modal Header */}
         <div className="px-6 py-4 border-b border-setu-border flex items-center justify-between bg-setu-card/60">
           <div className="flex items-center gap-3">

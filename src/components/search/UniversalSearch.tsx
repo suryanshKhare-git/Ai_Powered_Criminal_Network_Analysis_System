@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useApp } from '../../context/AppContext';
-import { EntityType, Entity } from '../../types';
+import { EntityType } from '../../types';
 import {
   Search,
   User,
@@ -9,26 +9,39 @@ import {
   CreditCard,
   MapPin,
   FileText,
-  ArrowRight,
   Pin,
   Share2,
   ExternalLink,
   Cpu,
   Filter,
+  Sparkles,
+  Compass,
+  Shield,
+  Building2,
+  Plus,
+  Table as TableIcon,
+  LayoutGrid,
 } from 'lucide-react';
+import { AIAnalysisService, StructuredQueryResult } from '../../services/aiAnalysisService';
 
 export const UniversalSearch: React.FC = () => {
   const {
     entities,
+    edges,
+    rawRecords,
     searchQuery,
     setSearchQuery,
     setActiveView,
     viewEntityProfile,
     selectEntity,
     pinToWorkspace,
+    inspectEvidenceByDocRef,
+    highlightEvidenceInGraph,
+    setAddDataModalOpen,
   } = useApp();
 
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [viewMode, setViewMode] = useState<'table' | 'cards'>('table');
 
   // Auto-detect entity type heuristic based on query string
   const detectedTypeSuggestion = useMemo(() => {
@@ -63,6 +76,13 @@ export const UniversalSearch: React.FC = () => {
         icon: <CreditCard className="w-3.5 h-3.5 text-emerald-400" />,
       };
     }
+    if (q.includes('ltd') || q.includes('pvt') || q.includes('cargo') || q.includes('freight') || q.includes('logistics') || q.includes('infratech') || q.includes('corp')) {
+      return {
+        type: 'organization' as EntityType,
+        label: 'Detected: Commercial Enterprise / Shell Entity',
+        icon: <Building2 className="w-3.5 h-3.5 text-indigo-400" />,
+      };
+    }
     if (q.includes('sector') || q.includes('toll') || q.includes('plaza') || q.includes('chowk') || q.includes('road')) {
       return {
         type: 'location' as EntityType,
@@ -76,6 +96,13 @@ export const UniversalSearch: React.FC = () => {
       icon: <User className="w-3.5 h-3.5 text-cyan-400" />,
     };
   }, [searchQuery]);
+
+  // AI Natural Language Structured Query Assist (Requirement 11, 20)
+  const structuredResult: StructuredQueryResult | null = useMemo(() => {
+    const q = searchQuery.trim();
+    if (!q || q.length < 3) return null;
+    return AIAnalysisService.runStructuredQuery(q, entities, edges, rawRecords);
+  }, [searchQuery, entities, edges, rawRecords]);
 
   // Filter entities
   const filteredEntities = useMemo(() => {
@@ -102,6 +129,8 @@ export const UniversalSearch: React.FC = () => {
     switch (type) {
       case 'person':
         return <User className="w-4 h-4 text-cyan-400" />;
+      case 'organization':
+        return <Building2 className="w-4 h-4 text-indigo-400" />;
       case 'phone':
         return <Phone className="w-4 h-4 text-teal-400" />;
       case 'vehicle':
@@ -112,6 +141,8 @@ export const UniversalSearch: React.FC = () => {
         return <MapPin className="w-4 h-4 text-purple-400" />;
       case 'case':
         return <FileText className="w-4 h-4 text-blue-400" />;
+      default:
+        return <Shield className="w-4 h-4 text-slate-400" />;
     }
   };
 
@@ -119,6 +150,8 @@ export const UniversalSearch: React.FC = () => {
     switch (type) {
       case 'person':
         return 'bg-cyan-950/60 text-cyan-300 border-cyan-800/60';
+      case 'organization':
+        return 'bg-indigo-950/60 text-indigo-300 border-indigo-800/60';
       case 'phone':
         return 'bg-teal-950/60 text-teal-300 border-teal-800/60';
       case 'vehicle':
@@ -129,6 +162,8 @@ export const UniversalSearch: React.FC = () => {
         return 'bg-purple-950/60 text-purple-300 border-purple-800/60';
       case 'case':
         return 'bg-blue-950/60 text-blue-300 border-blue-800/60';
+      default:
+        return 'bg-slate-900 text-slate-300 border-slate-700';
     }
   };
 
@@ -138,30 +173,68 @@ export const UniversalSearch: React.FC = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-4 sm:p-6 space-y-6 animate-fadeIn">
-      {/* Search Header and Big Search Box */}
-      <div className="space-y-3">
-        <div className="flex flex-col gap-1">
-          <h2 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
-            <Search className="w-5 h-5 text-teal-400" />
-            Universal Entity Search
-          </h2>
-          <p className="text-xs text-setu-textMuted">
-            Query across fragmented FIRs, Call Detail Records (CDRs), Vahan vehicle registries, banking transactions, and surveillance logs.
+    <div className="max-w-7xl mx-auto p-4 sm:p-6 space-y-6 animate-fadeIn">
+      {/* Standardized Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+        <div>
+          <div className="flex items-center gap-2.5">
+            <h1 className="text-xl font-bold text-white tracking-tight">Entities & Universal Search</h1>
+            <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-slate-800/80 border border-slate-700 text-slate-300">
+              {entities.length} Indexed Entities
+            </span>
+          </div>
+          <p className="text-xs text-slate-400 mt-1">
+            Search and resolve suspects, communications, vehicles, and accounts across dockets
           </p>
         </div>
+        <div className="flex items-center gap-2.5">
+          {/* View Mode Toggle */}
+          <div className="flex items-center bg-slate-900 border border-slate-800 rounded-md p-0.5 text-xs">
+            <button
+              onClick={() => setViewMode('table')}
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium transition ${
+                viewMode === 'table' ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
+              }`}
+              title="Table View (Dense & Scannable)"
+            >
+              <TableIcon className="w-3.5 h-3.5" />
+              <span>Table</span>
+            </button>
+            <button
+              onClick={() => setViewMode('cards')}
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium transition ${
+                viewMode === 'cards' ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
+              }`}
+              title="Card View (Detailed Dossiers)"
+            >
+              <LayoutGrid className="w-3.5 h-3.5" />
+              <span>Cards</span>
+            </button>
+          </div>
 
-        {/* Primary Omnibox Input */}
+          {/* ONE Primary Action Button */}
+          <button
+            onClick={() => setAddDataModalOpen(true)}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-teal-600 hover:bg-teal-500 text-white text-xs font-medium transition shadow-sm"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>Add / Ingest Data</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Search Input Omnibox */}
+      <div className="space-y-3">
         <div className="relative">
           <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-            <Search className="h-5 w-5 text-teal-400" />
+            <Search className="h-4 w-4 text-teal-400" />
           </div>
           <input
             type="text"
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             placeholder="Search by suspect name, phone (+91), vehicle plate (DL-01), bank A/C, location, or case ID..."
-            className="w-full pl-12 pr-28 py-3.5 bg-setu-surface border-2 border-setu-border focus:border-teal-500 rounded-lg text-sm text-white placeholder-slate-500 shadow-xl focus:outline-none transition font-sans"
+            className="w-full pl-11 pr-28 py-2.5 bg-slate-900/90 border border-slate-700 focus:border-teal-500 rounded-md text-sm text-white placeholder-slate-500 focus:outline-none transition font-sans"
             autoFocus
           />
           <div className="absolute inset-y-0 right-0 pr-3 flex items-center gap-1.5">
@@ -173,18 +246,40 @@ export const UniversalSearch: React.FC = () => {
                 Clear
               </button>
             )}
-            <kbd className="px-2 py-1 text-[11px] font-mono text-slate-400 bg-slate-900 rounded border border-slate-700 hidden sm:inline-block">
-              ESC to clear
+            <kbd className="px-2 py-0.5 text-[10px] font-mono text-slate-400 bg-slate-950 rounded border border-slate-800 hidden sm:inline-block">
+              ESC
             </kbd>
           </div>
         </div>
 
+        {/* Suggested Queries Chips */}
+        <div className="flex flex-wrap items-center gap-1.5 text-xs">
+          <span className="text-[11px] font-mono text-teal-400 font-semibold flex items-center gap-1 mr-1">
+            <Sparkles className="w-3 h-3" />
+            <span>Suggested:</span>
+          </span>
+          {[
+            'Who is Vikram Singh connected to?',
+            'What are the strongest relationships in this case?',
+            'Which entities appeared near Jewar Toll Plaza?',
+            'Show financial transfers linked to Hawala disbursement',
+          ].map(prompt => (
+            <button
+              key={prompt}
+              onClick={() => setSearchQuery(prompt)}
+              className="px-2.5 py-1 rounded-md bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 text-[11px] text-slate-300 hover:text-white transition font-sans"
+            >
+              "{prompt}"
+            </button>
+          ))}
+        </div>
+
         {/* Auto-detected Entity Suggestion Banner */}
         {detectedTypeSuggestion && searchQuery.trim().length > 1 && (
-          <div className="flex items-center justify-between px-3.5 py-2 rounded-md bg-slate-900/90 border border-setu-border text-xs text-slate-300">
+          <div className="flex items-center justify-between px-3.5 py-2 rounded-md bg-slate-900/90 border border-slate-800 text-xs text-slate-300">
             <div className="flex items-center gap-2">
-              <Cpu className="w-4 h-4 text-teal-400" />
-              <span className="font-mono text-setu-textMuted">Auto-classifier:</span>
+              <Cpu className="w-3.5 h-3.5 text-teal-400" />
+              <span className="font-mono text-slate-400">Pattern Match:</span>
               <span className="flex items-center gap-1.5 font-medium text-teal-300">
                 {detectedTypeSuggestion.icon}
                 {detectedTypeSuggestion.label}
@@ -197,13 +292,14 @@ export const UniversalSearch: React.FC = () => {
         )}
 
         {/* Quick Filter Pills */}
-        <div className="flex items-center gap-2 overflow-x-auto pt-1 pb-1 text-xs">
-          <span className="text-setu-textMuted text-xs flex items-center gap-1 mr-1">
-            <Filter className="w-3.5 h-3.5" /> Filter:
+        <div className="flex items-center gap-1.5 overflow-x-auto pt-1 pb-1 text-xs">
+          <span className="text-slate-400 text-xs flex items-center gap-1 mr-1">
+            <Filter className="w-3 h-3" /> Filter:
           </span>
           {[
-            { id: 'all', label: `All Entities (${entities.length})` },
+            { id: 'all', label: `All (${entities.length})` },
             { id: 'person', label: `Persons (${entities.filter(e => e.type === 'person').length})` },
+            { id: 'organization', label: `Organizations (${entities.filter(e => e.type === 'organization').length})` },
             { id: 'phone', label: `CDRs / Phones (${entities.filter(e => e.type === 'phone').length})` },
             { id: 'vehicle', label: `Vehicles (${entities.filter(e => e.type === 'vehicle').length})` },
             { id: 'account', label: `Financials (${entities.filter(e => e.type === 'account').length})` },
@@ -213,10 +309,10 @@ export const UniversalSearch: React.FC = () => {
             <button
               key={cat.id}
               onClick={() => setSelectedCategory(cat.id)}
-              className={`px-3 py-1 rounded-full text-xs font-medium transition whitespace-nowrap border ${
+              className={`px-2.5 py-1 rounded-md text-xs font-medium transition whitespace-nowrap border ${
                 selectedCategory === cat.id
-                  ? 'bg-teal-950 border-teal-500 text-teal-300 shadow-sm'
-                  : 'bg-setu-card border-setu-border text-slate-400 hover:text-slate-200 hover:border-slate-700'
+                  ? 'bg-teal-950/80 border-teal-600 text-teal-300 shadow-sm'
+                  : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700'
               }`}
             >
               {cat.label}
@@ -225,132 +321,336 @@ export const UniversalSearch: React.FC = () => {
         </div>
       </div>
 
-      {/* Results List */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between text-xs text-setu-textMuted px-1">
-          <span>Search Results ({filteredEntities.length})</span>
-          <span className="font-mono text-[11px]">Strict Chain of Custody Maintained</span>
-        </div>
-
-        {filteredEntities.length === 0 ? (
-          <div className="p-12 text-center bg-setu-surface border border-setu-border rounded-lg space-y-2">
-            <Search className="w-8 h-8 text-slate-600 mx-auto" />
-            <p className="text-sm text-slate-300 font-medium">No matching entities found in current case repository</p>
-            <p className="text-xs text-setu-textMuted">
-              Try searching by phone digits (+91 98110...), vehicle plate (DL-01...), suspect name (Vikram), or bank A/C.
-            </p>
+      {/* AI Structured Query Assist Result Card (Quiet Enterprise Style) */}
+      {structuredResult && searchQuery.trim().length >= 4 && (
+        <div className="p-4 rounded-lg bg-[#0e1524] border border-slate-800 space-y-3 font-sans animate-fadeIn">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="p-1 rounded bg-teal-950 border border-teal-700/60 text-teal-400">
+                <Sparkles className="w-3.5 h-3.5" />
+              </div>
+              <span className="text-xs font-mono font-bold text-teal-300 uppercase tracking-wider">
+                Natural Language Query Interpretation
+              </span>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-slate-300">
+                {structuredResult.intent}
+              </span>
+            </div>
+            {structuredResult.confidenceScore && (
+              <span className="text-xs font-mono text-teal-300 font-semibold">
+                {structuredResult.confidenceScore}% Confidence
+              </span>
+            )}
           </div>
-        ) : (
-          <div className="grid grid-cols-1 gap-3">
-            {filteredEntities.map(entity => (
-              <div
-                key={entity.id}
-                className="bg-setu-surface hover:bg-setu-card border border-setu-border hover:border-setu-borderLight rounded-lg p-4 transition-all duration-200 shadow-sm group"
-              >
-                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
-                  {/* Entity Icon & Identification */}
-                  <div className="flex items-start gap-3.5">
-                    <div className="p-2.5 rounded-lg bg-setu-card border border-setu-border shrink-0 mt-0.5">
-                      {getEntityIcon(entity.type)}
-                    </div>
 
-                    <div className="space-y-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="text-base font-semibold text-white group-hover:text-teal-300 transition">
-                          {entity.name}
-                        </span>
+          {/* Structured Answer Text */}
+          <div className="p-3 rounded bg-slate-900/80 border border-slate-800 text-xs text-slate-200 leading-relaxed font-sans">
+            {structuredResult.answerText}
+          </div>
 
-                        <span className={`px-2 py-0.5 rounded text-[11px] font-mono border ${getBadgeStyle(entity.type)}`}>
-                          {entity.categoryLabel}
-                        </span>
+          {/* Target Entities Chips & Graph Focus */}
+          {structuredResult.targetEntities.length > 0 && (
+            <div className="space-y-1.5 pt-1">
+              <span className="text-[10px] font-mono text-slate-400 uppercase">Correlated Entities in Docket:</span>
+              <div className="flex flex-wrap gap-2">
+                {structuredResult.targetEntities.map(ent => (
+                  <button
+                    key={ent.id}
+                    onClick={() => {
+                      selectEntity(ent.id);
+                      setActiveView('graph');
+                    }}
+                    className="flex items-center gap-2 p-1.5 px-2.5 rounded-md bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs text-white transition group"
+                  >
+                    <span className="font-semibold group-hover:text-teal-300">{ent.name}</span>
+                    <span className="text-[10px] font-mono text-slate-400">({ent.categoryLabel})</span>
+                    <Compass className="w-3 h-3 text-teal-400" />
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
-                        <span className="text-xs font-mono text-setu-textMuted px-2 py-0.5 bg-slate-900/60 rounded border border-slate-800">
-                          {entity.primaryIdentifier}
-                        </span>
-                      </div>
+          {/* Supporting Evidence Records */}
+          {structuredResult.supportingRecords.length > 0 && (
+            <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-800 text-[11px] font-mono">
+              <span className="text-slate-400">Supporting Records:</span>
+              {structuredResult.supportingRecords.map(rec => (
+                <div
+                  key={rec.id}
+                  className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-slate-900 border border-slate-800"
+                >
+                  <button
+                    onClick={() => inspectEvidenceByDocRef(rec.id)}
+                    className="text-teal-400 hover:underline flex items-center gap-1"
+                    title="Inspect Primary Evidence Docket"
+                  >
+                    <FileText className="w-3 h-3" />
+                    <span>{rec.documentNumber} ({rec.title})</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      highlightEvidenceInGraph(rec.id, rec.extractedEntities, rec.title);
+                      setActiveView('graph');
+                    }}
+                    className="p-0.5 text-slate-400 hover:text-teal-300 hover:bg-slate-800 rounded transition"
+                    title="Focus Subgraph on Canvas"
+                  >
+                    <Share2 className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
-                      {entity.aliases && entity.aliases.length > 0 && (
-                        <div className="text-xs text-setu-textMuted flex items-center gap-1.5">
-                          <span className="text-slate-500">Aliases / Mapped Identifiers:</span>
-                          <span className="text-slate-300 font-mono">
-                            {entity.aliases.join(', ')}
-                          </span>
+      {/* Results Header */}
+      <div className="flex items-center justify-between text-xs text-slate-400 px-1">
+        <span>Showing {filteredEntities.length} of {entities.length} entities</span>
+        <span className="font-mono text-[11px] text-slate-500">Chain of Custody Active</span>
+      </div>
+
+      {/* Results Display: Table View (Default) or Card View */}
+      {filteredEntities.length === 0 ? (
+        <div className="p-12 text-center bg-slate-900/60 border border-slate-800 rounded-lg space-y-2">
+          <Search className="w-8 h-8 text-slate-600 mx-auto" />
+          <p className="text-sm text-slate-300 font-medium">No matching entities found in current case repository</p>
+          <p className="text-xs text-slate-400">
+            Try searching by phone digits (+91 98110...), vehicle plate (DL-01...), suspect name (Vikram), or bank A/C.
+          </p>
+        </div>
+      ) : viewMode === 'table' ? (
+        /* TABLE VIEW (Requirement 20: default dense scannable view) */
+        <div className="bg-slate-900/70 border border-slate-800 rounded-lg overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs text-slate-300 border-collapse">
+              <thead>
+                <tr className="bg-slate-950/80 border-b border-slate-800 text-[11px] font-mono text-slate-400 uppercase">
+                  <th className="py-2.5 px-4 font-semibold">Entity / Name</th>
+                  <th className="py-2.5 px-3 font-semibold">Type</th>
+                  <th className="py-2.5 px-3 font-semibold">Identifier</th>
+                  <th className="py-2.5 px-3 font-semibold">Jurisdiction</th>
+                  <th className="py-2.5 px-3 font-semibold">Last Sighted</th>
+                  <th className="py-2.5 px-3 font-semibold">Risk / Flag</th>
+                  <th className="py-2.5 px-4 font-semibold text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-800/60 font-sans">
+                {filteredEntities.map(entity => (
+                  <tr
+                    key={entity.id}
+                    className="hover:bg-slate-800/40 transition-colors group"
+                  >
+                    <td className="py-2.5 px-4">
+                      <div className="flex items-center gap-2.5">
+                        <div className="p-1.5 rounded bg-slate-800/80 border border-slate-700/60 shrink-0">
+                          {getEntityIcon(entity.type)}
                         </div>
-                      )}
-
-                      <p className="text-xs text-slate-300 leading-relaxed pt-0.5">
-                        {entity.summary}
-                      </p>
-
-                      {/* Risk Indicator if present */}
-                      {entity.riskIndicator && (
-                        <div className="text-[11px] text-amber-400/90 flex items-center gap-1 font-mono pt-1">
-                          <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-                          <span>Intelligence Flag: {entity.riskIndicator}</span>
-                        </div>
-                      )}
-
-                      {/* Tags */}
-                      <div className="flex flex-wrap gap-1.5 pt-1.5">
-                        {entity.tags.map(t => (
-                          <span
-                            key={t}
-                            className="px-2 py-0.5 rounded text-[10px] font-mono bg-slate-900 border border-slate-800 text-slate-400"
+                        <div>
+                          <button
+                            onClick={() => viewEntityProfile(entity.id)}
+                            className="font-medium text-white group-hover:text-teal-300 text-left transition"
                           >
-                            #{t}
-                          </span>
-                        ))}
-                        <span className="text-[10px] font-mono text-slate-500 self-center ml-1">
-                          Sighted: {entity.lastSighted}
-                        </span>
+                            {entity.name}
+                          </button>
+                          {entity.aliases && entity.aliases.length > 0 && (
+                            <div className="text-[10px] text-slate-500 font-mono">
+                              aka {entity.aliases[0]}
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    </div>
+                    </td>
+                    <td className="py-2.5 px-3">
+                      <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-mono border ${getBadgeStyle(entity.type)}`}>
+                        {entity.categoryLabel}
+                      </span>
+                    </td>
+                    <td className="py-2.5 px-3 font-mono text-[11px] text-slate-300">
+                      {entity.primaryIdentifier}
+                    </td>
+                    <td className="py-2.5 px-3 text-slate-400 text-xs">
+                      {entity.jurisdiction || 'NCR Jurisdiction'}
+                    </td>
+                    <td className="py-2.5 px-3 text-slate-400 font-mono text-[11px]">
+                      {entity.lastSighted}
+                    </td>
+                    <td className="py-2.5 px-3">
+                      {entity.riskLevel ? (
+                        <span className={`inline-flex items-center gap-1 text-[11px] font-mono ${
+                          entity.riskLevel === 'HIGH'
+                            ? 'text-red-400'
+                            : entity.riskLevel === 'MEDIUM'
+                            ? 'text-amber-400'
+                            : 'text-slate-400'
+                        }`}>
+                          <span className={`w-1.5 h-1.5 rounded-full ${
+                            entity.riskLevel === 'HIGH'
+                              ? 'bg-red-500'
+                              : entity.riskLevel === 'MEDIUM'
+                              ? 'bg-amber-400'
+                              : 'bg-slate-500'
+                          }`} />
+                          {entity.riskLevel} {entity.riskScore ? `(${entity.riskScore})` : ''}
+                        </span>
+                      ) : (
+                        <span className="text-slate-500 font-mono text-[11px]">Standard</span>
+                      )}
+                    </td>
+                    <td className="py-2.5 px-4 text-right">
+                      <div className="inline-flex items-center justify-end gap-1.5">
+                        <button
+                          onClick={() => viewEntityProfile(entity.id)}
+                          className="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium transition"
+                          title="View Entity Profile"
+                        >
+                          Profile
+                        </button>
+                        <button
+                          onClick={() => handleInspectOnGraph(entity.id)}
+                          className="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-teal-400 hover:text-teal-300 text-xs font-medium transition"
+                          title="Locate on Network Graph Canvas"
+                        >
+                          Graph
+                        </button>
+                        <button
+                          onClick={() =>
+                            pinToWorkspace({
+                              entityId: entity.id,
+                              type: 'entity',
+                              title: entity.name,
+                              subtitle: entity.categoryLabel,
+                              column: 'active_leads',
+                              notes: entity.summary,
+                              tags: entity.tags,
+                              confidence: 'Subject of Interest',
+                            })
+                          }
+                          className="p-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-amber-400 transition"
+                          title="Pin to Investigation Pinboard"
+                        >
+                          <Pin className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      ) : (
+        /* CARD VIEW */
+        <div className="grid grid-cols-1 gap-3">
+          {filteredEntities.map(entity => (
+            <div
+              key={entity.id}
+              className="bg-slate-900/70 hover:bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-lg p-4 transition-all duration-200 shadow-sm group"
+            >
+              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                {/* Entity Icon & Identification */}
+                <div className="flex items-start gap-3.5">
+                  <div className="p-2.5 rounded-md bg-slate-800 border border-slate-700 shrink-0 mt-0.5">
+                    {getEntityIcon(entity.type)}
                   </div>
 
-                  {/* Actions Toolbar */}
-                  <div className="flex sm:flex-col items-center sm:items-end justify-end gap-2 shrink-0 border-t sm:border-t-0 pt-2 sm:pt-0 border-setu-border/50">
-                    <button
-                      onClick={() => viewEntityProfile(entity.id)}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded bg-teal-950/60 hover:bg-teal-900/80 border border-teal-500/50 text-xs font-medium text-teal-300 transition"
-                    >
-                      <ExternalLink className="w-3.5 h-3.5" />
-                      View Profile
-                    </button>
+                  <div className="space-y-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-base font-semibold text-white group-hover:text-teal-300 transition">
+                        {entity.name}
+                      </span>
 
-                    <button
-                      onClick={() => handleInspectOnGraph(entity.id)}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs font-medium text-slate-300 hover:text-white transition"
-                    >
-                      <Share2 className="w-3.5 h-3.5 text-teal-400" />
-                      View on Graph
-                    </button>
+                      <span className={`px-2 py-0.5 rounded text-[11px] font-mono border ${getBadgeStyle(entity.type)}`}>
+                        {entity.categoryLabel}
+                      </span>
 
-                    <button
-                      onClick={() =>
-                        pinToWorkspace({
-                          entityId: entity.id,
-                          type: 'entity',
-                          title: entity.name,
-                          subtitle: entity.categoryLabel,
-                          column: 'active_leads',
-                          notes: entity.summary,
-                          tags: entity.tags,
-                          confidence: 'Subject of Interest',
-                        })
-                      }
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs font-medium text-amber-400/90 hover:text-amber-300 transition"
-                      title="Pin to Investigation Pinboard"
-                    >
-                      <Pin className="w-3.5 h-3.5" />
-                      Pin to Case
-                    </button>
+                      <span className="text-xs font-mono text-slate-400 px-2 py-0.5 bg-slate-950 rounded border border-slate-800">
+                        {entity.primaryIdentifier}
+                      </span>
+                    </div>
+
+                    {entity.aliases && entity.aliases.length > 0 && (
+                      <div className="text-xs text-slate-400 flex items-center gap-1.5">
+                        <span className="text-slate-500">Aliases / Mapped Identifiers:</span>
+                        <span className="text-slate-300 font-mono">
+                          {entity.aliases.join(', ')}
+                        </span>
+                      </div>
+                    )}
+
+                    <p className="text-xs text-slate-300 leading-relaxed pt-0.5">
+                      {entity.summary}
+                    </p>
+
+                    {/* Risk Indicator if present */}
+                    {entity.riskIndicator && (
+                      <div className="text-[11px] text-amber-400/90 flex items-center gap-1 font-mono pt-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                        <span>Intelligence Flag: {entity.riskIndicator}</span>
+                      </div>
+                    )}
+
+                    {/* Tags */}
+                    <div className="flex flex-wrap gap-1.5 pt-1.5">
+                      {entity.tags.map(t => (
+                        <span
+                          key={t}
+                          className="px-2 py-0.5 rounded text-[10px] font-mono bg-slate-950 border border-slate-800 text-slate-400"
+                        >
+                          #{t}
+                        </span>
+                      ))}
+                      <span className="text-[10px] font-mono text-slate-500 self-center ml-1">
+                        Sighted: {entity.lastSighted}
+                      </span>
+                    </div>
                   </div>
                 </div>
+
+                {/* Actions Toolbar */}
+                <div className="flex sm:flex-col items-center sm:items-end justify-end gap-2 shrink-0 border-t sm:border-t-0 pt-2 sm:pt-0 border-slate-800">
+                  <button
+                    onClick={() => viewEntityProfile(entity.id)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-teal-950/70 hover:bg-teal-900/80 border border-teal-600/60 text-xs font-medium text-teal-300 transition"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                    View Profile
+                  </button>
+
+                  <button
+                    onClick={() => handleInspectOnGraph(entity.id)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-medium text-slate-300 hover:text-white transition"
+                  >
+                    <Share2 className="w-3.5 h-3.5 text-teal-400" />
+                    View on Graph
+                  </button>
+
+                  <button
+                    onClick={() =>
+                      pinToWorkspace({
+                        entityId: entity.id,
+                        type: 'entity',
+                        title: entity.name,
+                        subtitle: entity.categoryLabel,
+                        column: 'active_leads',
+                        notes: entity.summary,
+                        tags: entity.tags,
+                        confidence: 'Subject of Interest',
+                      })
+                    }
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-medium text-amber-400/90 hover:text-amber-300 transition"
+                    title="Pin to Investigation Pinboard"
+                  >
+                    <Pin className="w-3.5 h-3.5" />
+                    Pin to Case
+                  </button>
+                </div>
               </div>
-            ))}
-          </div>
-        )}
-      </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

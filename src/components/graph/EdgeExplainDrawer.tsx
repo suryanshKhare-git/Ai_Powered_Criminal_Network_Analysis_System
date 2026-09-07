@@ -5,8 +5,6 @@ import { ConfidenceMeter } from '../common/ConfidenceMeter';
 import {
   X,
   FileCheck,
-  AlertCircle,
-  FileText,
   ExternalLink,
   ShieldCheck,
   CheckCircle2,
@@ -15,10 +13,9 @@ import {
   Pin,
   Network,
   Activity,
-  SlidersHorizontal,
   Info,
-  Clock,
   UserCheck,
+  Compass,
 } from 'lucide-react';
 
 interface EdgeExplainDrawerProps {
@@ -32,6 +29,7 @@ export const EdgeExplainDrawer: React.FC<EdgeExplainDrawerProps> = ({ edge, onCl
     updateEdgeReview,
     pinToWorkspace,
     inspectEvidenceByDocRef,
+    highlightEvidenceInGraph,
     currentRole,
   } = useApp();
 
@@ -81,16 +79,16 @@ export const EdgeExplainDrawer: React.FC<EdgeExplainDrawerProps> = ({ edge, onCl
   };
 
   return (
-    <div className="w-96 sm:w-[460px] bg-setu-surface border-l border-setu-border flex flex-col h-full shadow-2xl z-30 animate-slideLeft overflow-hidden text-setu-text">
+    <div className="w-96 sm:w-[460px] bg-[#0B0F17] border-l border-slate-800 flex flex-col h-full shadow-2xl z-30 animate-slideLeft overflow-hidden text-slate-200">
       {/* Header */}
-      <div className="p-4 border-b border-setu-border flex items-center justify-between bg-setu-card/70">
+      <div className="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-900/60">
         <div className="flex items-center gap-2.5">
-          <div className="p-2 rounded bg-teal-950/80 border border-teal-500/50 text-teal-400">
-            <Network className="w-5 h-5" />
+          <div className="p-2 rounded-md bg-slate-800 border border-slate-700 text-teal-400">
+            <Network className="w-4 h-4" />
           </div>
           <div>
-            <div className="text-[10px] font-mono uppercase tracking-wider text-setu-textMuted">
-              Explainable Link Intelligence
+            <div className="text-[10px] font-mono uppercase tracking-wider text-slate-400">
+              Relationship Inspector
             </div>
             <h3 className="text-sm font-bold text-white truncate max-w-[280px]">
               {edge.label}
@@ -99,63 +97,120 @@ export const EdgeExplainDrawer: React.FC<EdgeExplainDrawerProps> = ({ edge, onCl
         </div>
         <button
           onClick={onClose}
-          className="p-1.5 rounded text-setu-textMuted hover:text-white hover:bg-slate-800 transition"
+          className="p-1.5 rounded-md text-slate-400 hover:text-white hover:bg-slate-800 transition"
           aria-label="Close drawer"
         >
-          <X className="w-5 h-5" />
+          <X className="w-4 h-4" />
         </button>
       </div>
 
       {/* Body */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-5 text-xs">
-        {/* Linked Entities Bar */}
-        <div className="bg-slate-900/70 p-3 rounded-lg border border-setu-border space-y-2">
-          <div className="text-[11px] font-mono text-setu-textMuted uppercase">
-            Connected Entity Pair
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 text-xs">
+        {/* Requirement 4: ENTITY A ↓ RELATIONSHIP ↓ ENTITY B Layout & Metrics */}
+        <div className="bg-slate-950/70 p-3.5 rounded-lg border border-slate-800 space-y-3 font-sans">
+          <div className="flex items-center justify-between text-[11px] font-mono text-slate-400 font-bold uppercase tracking-wider">
+            <span>Verified Topology</span>
+            <span className="px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-teal-300 text-[10px]">
+              {edge.connectionType.toUpperCase()}
+            </span>
           </div>
-          <div className="flex items-center justify-between gap-2 text-xs font-semibold text-white">
-            <div className="truncate">
-              <div className="text-teal-300">{sourceEntity?.name || edge.source}</div>
-              <div className="text-[10px] text-setu-textMuted font-mono font-normal">
-                {sourceEntity?.categoryLabel}
-              </div>
+
+          {/* Entity A */}
+          <div className="flex items-start justify-between p-2.5 rounded-md bg-slate-900/90 border border-slate-800">
+            <div>
+              <div className="text-[10px] font-mono text-slate-500 uppercase">Origin</div>
+              <div className="text-xs font-bold text-white mt-0.5">{sourceEntity?.name || edge.source}</div>
+              <div className="text-[10px] font-mono text-teal-400">{sourceEntity?.primaryIdentifier}</div>
             </div>
-            <span className="text-slate-500 font-mono text-xs">⟷</span>
-            <div className="text-right truncate">
-              <div className="text-teal-300">{targetEntity?.name || edge.target}</div>
-              <div className="text-[10px] text-setu-textMuted font-mono font-normal">
-                {targetEntity?.categoryLabel}
-              </div>
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-300">
+              {sourceEntity?.categoryLabel || 'Entity'}
+            </span>
+          </div>
+
+          {/* Down Arrow & Relationship Label */}
+          <div className="flex items-center justify-center gap-2 py-0.5 text-slate-500">
+            <div className="h-px bg-slate-800 flex-1" />
+            <div className="px-3 py-1 rounded-md bg-slate-900 border border-slate-700 text-[11px] font-mono text-teal-300 font-semibold flex items-center gap-1.5 shadow-sm">
+              <span>↓ {edge.label} ↓</span>
+            </div>
+            <div className="h-px bg-slate-800 flex-1" />
+          </div>
+
+          {/* Entity B */}
+          <div className="flex items-start justify-between p-2.5 rounded-md bg-slate-900/90 border border-slate-800">
+            <div>
+              <div className="text-[10px] font-mono text-slate-500 uppercase">Destination</div>
+              <div className="text-xs font-bold text-white mt-0.5">{targetEntity?.name || edge.target}</div>
+              <div className="text-[10px] font-mono text-teal-400">{targetEntity?.primaryIdentifier}</div>
+            </div>
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-300">
+              {targetEntity?.categoryLabel || 'Entity'}
+            </span>
+          </div>
+
+          {/* Relationship Metadata Grid */}
+          <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-800 text-[11px] font-mono">
+            <div className="bg-slate-900/60 p-2 rounded-md border border-slate-800">
+              <span className="text-slate-500 block text-[9px] uppercase">Strength</span>
+              <span className="text-teal-300 font-bold">{edge.confidenceBand} ({edge.confidenceRange})</span>
+            </div>
+            <div className="bg-slate-900/60 p-2 rounded-md border border-slate-800">
+              <span className="text-slate-500 block text-[9px] uppercase">Evidence Count</span>
+              <span className="text-white font-bold">{edge.sourceCitations.length} Source Document(s)</span>
+            </div>
+            <div className="bg-slate-900/60 p-2 rounded-md border border-slate-800">
+              <span className="text-slate-500 block text-[9px] uppercase">First Observed</span>
+              <span className="text-slate-300">{edge.sourceCitations[0]?.timestamp || '2024-10-12 18:30 IST'}</span>
+            </div>
+            <div className="bg-slate-900/60 p-2 rounded-md border border-slate-800">
+              <span className="text-slate-500 block text-[9px] uppercase">Observed Records</span>
+              <span className="text-slate-300">
+                {edge.connectionType === 'telephony' ? '28 Calls & SMS' : edge.connectionType === 'spatial' ? '4 Tower / ANPR pings' : edge.connectionType === 'financial' ? '3 Layered Transfers' : 'Continuous Registration'}
+              </span>
             </div>
           </div>
+
+          {/* Canvas Highlight Trigger */}
+          <button
+            onClick={() =>
+              highlightEvidenceInGraph(
+                edge.sourceCitations[0]?.docRef || edge.id,
+                [edge.source, edge.target],
+                `Link: ${sourceEntity?.name || edge.source} ⟷ ${targetEntity?.name || edge.target}`
+              )
+            }
+            className="w-full flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-md bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs font-mono text-teal-300 hover:text-teal-200 transition"
+          >
+            <Compass className="w-3.5 h-3.5 text-teal-400" />
+            <span>Focus This Link Pair on Canvas</span>
+          </button>
         </div>
 
-        {/* Lead Classification & Mandatory Disclaimer */}
+        {/* Lead Classification & Disclaimer */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <div className="text-[11px] font-mono text-setu-textMuted uppercase">
+            <div className="text-[11px] font-mono text-slate-400 uppercase">
               Evidentiary Classification
             </div>
             {getStatusBadge(edge.reviewStatus)}
           </div>
 
-          {/* Guaranteed "Lead" or "Possible Connection" Banner */}
-          <div className="p-2.5 rounded bg-teal-950/40 border border-teal-500/50 flex items-start gap-2">
+          <div className="p-2.5 rounded-md bg-teal-950/30 border border-teal-800/50 flex items-start gap-2">
             <ShieldCheck className="w-4 h-4 text-teal-400 shrink-0 mt-0.5" />
             <div>
               <div className="font-semibold text-teal-200 text-xs">
                 {edge.leadLabel}
               </div>
               <p className="text-[11px] text-teal-300/80 mt-0.5 leading-normal">
-                Algorithmic correlation for investigative lead generation only. Evidentiary weight must be corroborated by human detective prior to judicial filing.
+                Corroborated relationship pattern for investigative decision-support. Official judicial filing requires manual verification.
               </p>
             </div>
           </div>
         </div>
 
-        {/* Confidence Meter (Qualitative Band + Range + Factor Breakdown) */}
-        <div className="bg-slate-900/60 p-3.5 rounded-lg border border-setu-border space-y-3">
-          <div className="text-[11px] font-mono text-setu-textMuted uppercase">
+        {/* Confidence Meter */}
+        <div className="bg-slate-900/60 p-3.5 rounded-lg border border-slate-800 space-y-3">
+          <div className="text-[11px] font-mono text-slate-400 uppercase">
             Confidence & Weight Assessment
           </div>
           <ConfidenceMeter
@@ -170,19 +225,19 @@ export const EdgeExplainDrawer: React.FC<EdgeExplainDrawerProps> = ({ edge, onCl
         <div className="space-y-2">
           <div className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-300 uppercase tracking-wider font-mono">
             <Info className="w-3.5 h-3.5 text-teal-400" />
-            Plain-Language Investigative Explanation
+            Investigative Rationale
           </div>
-          <div className="p-3.5 rounded bg-[#0A0F1C] border border-setu-borderLight/60 text-slate-200 text-xs leading-relaxed font-sans shadow-inner">
+          <div className="p-3 rounded-lg bg-slate-900/70 border border-slate-800 text-slate-200 text-xs leading-relaxed font-sans">
             {edge.plainLanguageExplanation}
           </div>
         </div>
 
-        {/* Underlying Evidence Citations (No Dead Ends!) */}
+        {/* Underlying Evidence Citations */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-300 uppercase tracking-wider font-mono">
               <FileCheck className="w-3.5 h-3.5 text-emerald-400" />
-              Underlying Evidentiary Citations ({edge.sourceCitations.length})
+              Source Evidence ({edge.sourceCitations.length})
             </div>
             <span className="text-[10px] text-teal-400 font-mono">Click to inspect</span>
           </div>
@@ -191,12 +246,12 @@ export const EdgeExplainDrawer: React.FC<EdgeExplainDrawerProps> = ({ edge, onCl
             {edge.sourceCitations.map(cite => (
               <div
                 key={cite.id}
-                className="p-3 rounded-lg bg-slate-900/80 border border-setu-border hover:border-teal-500/60 transition group cursor-pointer"
+                className="p-3 rounded-md bg-slate-900/80 border border-slate-800 hover:border-slate-700 transition group cursor-pointer"
                 onClick={() => inspectEvidenceByDocRef(cite.docRef)}
               >
                 <div className="flex items-center justify-between gap-2 mb-1">
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-teal-300 font-semibold">
+                    <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-800 text-teal-300 font-semibold">
                       {cite.recordType}
                     </span>
                     <span className="text-xs font-semibold text-white group-hover:text-teal-300 transition">
@@ -206,11 +261,11 @@ export const EdgeExplainDrawer: React.FC<EdgeExplainDrawerProps> = ({ edge, onCl
                   <ExternalLink className="w-3.5 h-3.5 text-slate-500 group-hover:text-teal-400 transition" />
                 </div>
 
-                <p className="text-[11px] text-slate-300 leading-relaxed font-mono bg-[#070A12] p-2 rounded border border-slate-800 my-1.5 select-all">
+                <p className="text-[11px] text-slate-300 leading-relaxed font-mono bg-slate-950/80 p-2 rounded border border-slate-800 my-1.5 select-all">
                   "{cite.snippet}"
                 </p>
 
-                <div className="flex items-center justify-between text-[10px] font-mono text-setu-textMuted">
+                <div className="flex items-center justify-between text-[10px] font-mono text-slate-500">
                   <span>Doc Ref: {cite.docRef}</span>
                   {cite.timestamp && <span>Recorded: {cite.timestamp}</span>}
                 </div>
@@ -220,11 +275,11 @@ export const EdgeExplainDrawer: React.FC<EdgeExplainDrawerProps> = ({ edge, onCl
         </div>
 
         {/* Human Oversight Review & Verification Controls */}
-        <div className="p-4 rounded-lg bg-slate-900/90 border border-teal-500/40 space-y-3">
+        <div className="p-4 rounded-lg bg-slate-900/90 border border-slate-800 space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5 text-xs font-bold text-teal-300 font-mono uppercase tracking-wide">
               <UserCheck className="w-4 h-4 text-teal-400" />
-              Human Investigator Review
+              Investigator Verification
             </div>
             <span className="text-[10px] font-mono text-slate-400">
               IO: {currentRole.badge}
@@ -232,14 +287,14 @@ export const EdgeExplainDrawer: React.FC<EdgeExplainDrawerProps> = ({ edge, onCl
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-[11px] text-setu-textMuted font-sans">
-              Investigator Note / Evidentiary Findings:
+            <label className="text-[11px] text-slate-400 font-sans">
+              Investigator Note / Verification Reference:
             </label>
             <textarea
               value={reviewNote}
               onChange={e => setReviewNote(e.target.value)}
               placeholder="Add investigator notes, verification references, or forensic test requests..."
-              className="w-full h-18 p-2.5 rounded bg-[#070B14] border border-setu-border focus:border-teal-500 text-xs text-white placeholder-slate-600 focus:outline-none transition resize-none font-sans"
+              className="w-full h-18 p-2.5 rounded-md bg-slate-950 border border-slate-700 focus:border-teal-500 text-xs text-white placeholder-slate-600 focus:outline-none transition resize-none font-sans"
             />
           </div>
 
@@ -247,7 +302,7 @@ export const EdgeExplainDrawer: React.FC<EdgeExplainDrawerProps> = ({ edge, onCl
           <div className="grid grid-cols-2 gap-2 pt-1">
             <button
               onClick={() => handleReviewAction('verified_lead')}
-              className="flex items-center justify-center gap-1.5 py-2 px-3 rounded bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-500/70 text-xs font-medium text-emerald-200 transition shadow-sm"
+              className="flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-md bg-emerald-950 hover:bg-emerald-900/80 border border-emerald-600 text-xs font-medium text-emerald-200 transition shadow-sm"
             >
               <CheckCircle2 className="w-3.5 h-3.5" />
               Verify Lead
@@ -255,7 +310,7 @@ export const EdgeExplainDrawer: React.FC<EdgeExplainDrawerProps> = ({ edge, onCl
 
             <button
               onClick={() => handleReviewAction('needs_evidence')}
-              className="flex items-center justify-center gap-1.5 py-2 px-3 rounded bg-amber-950/80 hover:bg-amber-900 border border-amber-500/70 text-xs font-medium text-amber-200 transition shadow-sm"
+              className="flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-md bg-amber-950 hover:bg-amber-900/80 border border-amber-600 text-xs font-medium text-amber-200 transition shadow-sm"
             >
               <HelpCircle className="w-3.5 h-3.5" />
               Needs More Proof
@@ -263,7 +318,7 @@ export const EdgeExplainDrawer: React.FC<EdgeExplainDrawerProps> = ({ edge, onCl
 
             <button
               onClick={() => handleReviewAction('unreviewed')}
-              className="flex items-center justify-center gap-1.5 py-2 px-3 rounded bg-slate-800 hover:bg-slate-700 border border-slate-600 text-xs font-medium text-slate-300 transition"
+              className="flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-md bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-medium text-slate-300 transition"
             >
               <FileCheck className="w-3.5 h-3.5" />
               Mark as Reviewed
@@ -271,7 +326,7 @@ export const EdgeExplainDrawer: React.FC<EdgeExplainDrawerProps> = ({ edge, onCl
 
             <button
               onClick={() => handleReviewAction('dismissed')}
-              className="flex items-center justify-center gap-1.5 py-2 px-3 rounded bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs font-medium text-slate-400 hover:text-slate-200 transition"
+              className="flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-md bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs font-medium text-slate-400 hover:text-slate-200 transition"
             >
               <XCircle className="w-3.5 h-3.5" />
               Dismiss Lead
@@ -285,7 +340,7 @@ export const EdgeExplainDrawer: React.FC<EdgeExplainDrawerProps> = ({ edge, onCl
           )}
 
           {edge.reviewedBy && (
-            <div className="pt-2 border-t border-setu-border/60 text-[10px] font-mono text-slate-400 flex items-center justify-between">
+            <div className="pt-2 border-t border-slate-800 text-[10px] font-mono text-slate-500 flex items-center justify-between">
               <span>Last reviewed by: {edge.reviewedBy}</span>
               <span>{edge.reviewedAt}</span>
             </div>
@@ -294,7 +349,7 @@ export const EdgeExplainDrawer: React.FC<EdgeExplainDrawerProps> = ({ edge, onCl
       </div>
 
       {/* Footer */}
-      <div className="p-4 border-t border-setu-border bg-setu-card/70 flex items-center justify-between">
+      <div className="p-3.5 border-t border-slate-800 bg-slate-900/80 flex items-center justify-between">
         <button
           onClick={() =>
             pinToWorkspace({
@@ -308,17 +363,17 @@ export const EdgeExplainDrawer: React.FC<EdgeExplainDrawerProps> = ({ edge, onCl
               confidence: edge.confidenceRange,
             })
           }
-          className="flex items-center gap-1.5 py-2 px-4 rounded bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs font-medium text-amber-400 hover:text-amber-300 transition"
+          className="flex items-center gap-1.5 py-1.5 px-3 rounded-md bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-medium text-amber-400 hover:text-amber-300 transition"
         >
           <Pin className="w-3.5 h-3.5" />
-          Pin Lead to Workspace
+          <span>Pin to Workspace</span>
         </button>
 
         <button
           onClick={onClose}
-          className="px-4 py-2 rounded bg-slate-800 hover:bg-slate-700 border border-slate-600 text-xs font-medium text-slate-300 transition"
+          className="px-3 py-1.5 rounded-md bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-300 transition"
         >
-          Close Drawer
+          Close
         </button>
       </div>
     </div>

@@ -9,10 +9,20 @@ import {
   UserCheck,
   ShieldAlert,
   Lock,
+  Sparkles,
+  FileCheck,
 } from 'lucide-react';
 
 export const Navigation: React.FC = () => {
-  const { activeView, setActiveView, currentRole, workspaceCards, edges } = useApp();
+  const {
+    activeView,
+    setActiveView,
+    currentRole,
+    workspaceCards,
+    edges,
+    aiInsights,
+    setReportModalOpen,
+  } = useApp();
 
   const unreviewedLeadsCount = edges.filter(e => e.isAIGenerated && e.reviewStatus === 'unreviewed').length;
 
@@ -32,6 +42,12 @@ export const Navigation: React.FC = () => {
       label: 'Network Graph',
       icon: <Share2 className="w-4 h-4" />,
       badge: unreviewedLeadsCount > 0 ? `${unreviewedLeadsCount} Leads` : undefined,
+    },
+    {
+      id: 'insights',
+      label: 'AI Insights',
+      icon: <Sparkles className="w-4 h-4 text-amber-400" />,
+      badge: aiInsights.length > 0 ? `${aiInsights.length} Leads` : undefined,
     },
     {
       id: 'timeline',
@@ -70,7 +86,7 @@ export const Navigation: React.FC = () => {
               onClick={() => setActiveView(item.id)}
               className={`flex items-center gap-2 px-3.5 py-2.5 text-xs font-medium border-b-2 transition relative whitespace-nowrap ${
                 isActive
-                  ? 'border-teal-400 text-teal-300 bg-setu-surface/80'
+                  ? 'border-teal-400 text-teal-300 bg-setu-surface/80 font-semibold'
                   : 'border-transparent text-slate-400 hover:text-slate-200 hover:border-slate-700'
               }`}
             >
@@ -103,9 +119,19 @@ export const Navigation: React.FC = () => {
         })}
       </div>
 
-      <div className="hidden md:flex items-center gap-2 text-[11px] font-mono text-setu-textMuted py-2 pr-2">
-        <span className="w-1.5 h-1.5 rounded-full bg-teal-400" />
-        <span>EVIDENTIARY OVERSIGHT: HUMAN REVIEW REQUIRED</span>
+      <div className="hidden md:flex items-center gap-3 text-[11px] font-mono text-setu-textMuted py-2 pr-2">
+        <button
+          onClick={() => setReportModalOpen(true)}
+          className="flex items-center gap-1.5 px-3 py-1 rounded bg-teal-950/80 hover:bg-teal-900 border border-teal-500/60 text-teal-300 text-xs font-semibold font-mono transition shadow-sm"
+        >
+          <FileCheck className="w-3.5 h-3.5 text-teal-400" />
+          <span>Generate Report</span>
+        </button>
+
+        <div className="flex items-center gap-2 text-slate-500 pl-2 border-l border-setu-border">
+          <span className="w-1.5 h-1.5 rounded-full bg-teal-400" />
+          <span>HUMAN REVIEW MANDATORY</span>
+        </div>
       </div>
     </nav>
   );

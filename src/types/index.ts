@@ -1,4 +1,4 @@
-export type EntityType = 'person' | 'phone' | 'vehicle' | 'account' | 'location' | 'case';
+export type EntityType = 'person' | 'phone' | 'vehicle' | 'account' | 'location' | 'case' | 'organization';
 
 export type ReviewStatus = 'unreviewed' | 'verified_lead' | 'needs_evidence' | 'dismissed';
 
@@ -12,6 +12,9 @@ export interface Entity {
   primaryIdentifier: string;
   aliases?: string[];
   riskIndicator?: string;
+  riskLevel?: 'HIGH' | 'MEDIUM' | 'LOW';
+  riskScore?: number; // 0 - 100
+  riskRationale?: string;
   summary: string;
   jurisdiction: string;
   firstSighted: string;
@@ -43,7 +46,7 @@ export interface ConnectionEdge {
   source: string; // entity id
   target: string; // entity id
   label: string;
-  connectionType: 'telephony' | 'spatial' | 'financial' | 'ownership' | 'co_accused';
+  connectionType: 'telephony' | 'spatial' | 'financial' | 'ownership' | 'co_accused' | 'employment' | 'association';
   isAIGenerated: boolean;
   leadLabel: string; // MUST contain 'Lead' or 'Possible Connection' for AI links
   confidenceBand: SignalBand;
@@ -136,4 +139,59 @@ export interface CaseOverview {
   jurisdiction: string;
   sections: string[];
   synopsis: string;
+  entityCount?: number;
+  edgeCount?: number;
+  riskLevel?: 'HIGH' | 'MEDIUM' | 'LOW';
+  lastUpdated?: string;
+  status?: 'active' | 'archived' | 'pending';
 }
+
+export type Case = CaseOverview;
+
+export type InsightType = 'RELATIONSHIP' | 'TEMPORAL' | 'LOCATION' | 'NETWORK' | 'ACTIVITY';
+
+export type InsightReviewStatus = 'not_reviewed' | 'under_review' | 'verified_lead' | 'dismissed' | 'false_positive';
+
+export interface AIInvestigationInsight {
+  id: string;
+  caseId: string;
+  title: string;
+  priority: 'HIGH' | 'MEDIUM' | 'LOW';
+  type: InsightType;
+  shortExplanation: string;
+  whyThisInsight: string;
+  entityId?: string;
+  relatedEntityName?: string;
+  relatedEntityIds: string[];
+  relatedEdgeIds: string[];
+  whyDetected: string[];
+  supportingFactors: FactorScore[];
+  confidence: number; // 0 - 100 percentage
+  suggestedAction: string;
+  evidenceReferences: SourceCitation[];
+  reviewStatus: InsightReviewStatus;
+  investigatorNote?: string;
+  reviewedBy?: string;
+  reviewedAt?: string;
+  dataQualityNotice?: string;
+  priorityScoreBreakdown?: { factor: string; points: number }[];
+  timelinePattern?: { label: string; periods: { date: string; count: number }[] };
+  reviewed?: boolean;
+}
+
+export interface NetworkCluster {
+  id: string;
+  name: string;
+  entityIds: string[];
+  relationshipCount: number;
+  whyItMatters: string;
+  patternType: string;
+  confidence: number;
+}
+
+export interface AnalysisProgressStep {
+  id: string;
+  label: string;
+  status: 'pending' | 'active' | 'completed';
+}
+

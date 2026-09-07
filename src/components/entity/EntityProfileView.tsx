@@ -16,11 +16,9 @@ import {
   Pin,
   ExternalLink,
   Shield,
-  ChevronRight,
   Send,
-  Calendar,
-  AlertTriangle,
-  Award,
+  Building2,
+  ChevronRight,
 } from 'lucide-react';
 
 export const EntityProfileView: React.FC = () => {
@@ -88,6 +86,10 @@ export const EntityProfileView: React.FC = () => {
         return <MapPin className="w-6 h-6 text-purple-400" />;
       case 'case':
         return <FileText className="w-6 h-6 text-blue-400" />;
+      case 'organization':
+        return <Building2 className="w-6 h-6 text-indigo-400" />;
+      default:
+        return <Shield className="w-6 h-6 text-slate-400" />;
     }
   };
 
@@ -108,15 +110,27 @@ export const EntityProfileView: React.FC = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-4 sm:p-6 space-y-6 animate-fadeIn">
-      {/* Entity Selector Quick Switcher */}
-      <div className="flex items-center justify-between gap-3 bg-setu-surface p-3 rounded-lg border border-setu-border text-xs">
+    <div className="max-w-7xl mx-auto p-4 sm:p-6 space-y-6 animate-fadeIn text-slate-200">
+      {/* Standardized Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+        <div>
+          <div className="flex items-center gap-2.5">
+            <h1 className="text-xl font-bold text-white tracking-tight">Subject Dossier & Profile</h1>
+            <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-teal-300">
+              {activeEntity.categoryLabel}
+            </span>
+          </div>
+          <p className="text-xs text-slate-400 mt-1">
+            Consolidated intelligence record, telephony linkages, timeline entries, and case diary notes
+          </p>
+        </div>
+
         <div className="flex items-center gap-2">
-          <span className="text-setu-textMuted font-mono">Entity Dossier:</span>
+          {/* Quick Switcher */}
           <select
             value={activeEntity.id}
             onChange={e => viewEntityProfile(e.target.value)}
-            className="bg-setu-card text-white border border-setu-border rounded px-3 py-1.5 focus:outline-none focus:border-teal-500 font-medium"
+            className="bg-slate-900 text-slate-200 border border-slate-700 rounded-md px-2.5 py-1.5 text-xs focus:outline-none focus:border-teal-500 font-sans"
           >
             {entities.map(e => (
               <option key={e.id} value={e.id}>
@@ -124,9 +138,7 @@ export const EntityProfileView: React.FC = () => {
               </option>
             ))}
           </select>
-        </div>
 
-        <div className="flex items-center gap-2">
           <button
             onClick={() => {
               pinToWorkspace({
@@ -140,18 +152,18 @@ export const EntityProfileView: React.FC = () => {
                 confidence: 'Subject Profile',
               });
             }}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded bg-slate-900 hover:bg-slate-800 border border-slate-700 text-amber-400 text-xs font-medium transition"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-slate-800 hover:bg-slate-700 border border-slate-700 text-amber-400 hover:text-amber-300 text-xs font-medium transition"
           >
             <Pin className="w-3.5 h-3.5" />
-            Pin to Workspace
+            <span>Pin</span>
           </button>
 
           <button
             onClick={() => setActiveView('graph')}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded bg-teal-950/80 hover:bg-teal-900 border border-teal-500/50 text-teal-300 text-xs font-medium transition"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-md bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold shadow-sm transition"
           >
             <Share2 className="w-3.5 h-3.5" />
-            View in Network Graph
+            <span>View on Graph</span>
           </button>
         </div>
       </div>
