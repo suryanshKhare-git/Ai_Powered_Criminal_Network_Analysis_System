@@ -13,7 +13,9 @@ import {
   User,
   LogOut,
   ShieldCheck,
+  QrCode,
 } from 'lucide-react';
+import { LiveQRCodeModal } from '../common/LiveQRCodeModal';
 
 interface HeaderProps {
   onOpenShortcuts?: () => void;
@@ -35,11 +37,9 @@ export const Header: React.FC<HeaderProps> = () => {
 
   const { investigator, logout } = useAuth();
 
-  const [roleMenuOpen, setRoleMenuOpen] =
-    useState(false);
-
-  const [profileMenuOpen, setProfileMenuOpen] =
-    useState(false);
+  const [roleMenuOpen, setRoleMenuOpen] = useState(false);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const [qrModalOpen, setQrModalOpen] = useState(false);
 
   /* =======================================================
      LOGOUT
@@ -51,10 +51,7 @@ export const Header: React.FC<HeaderProps> = () => {
     try {
       await logout();
     } catch (error) {
-      console.error(
-        'Logout failed:',
-        error
-      );
+      console.error('Logout failed:', error);
     }
   };
 
@@ -213,10 +210,19 @@ export const Header: React.FC<HeaderProps> = () => {
           </span>
         </button>
 
+        {/* Live Permanent QR Code Button */}
+        <button
+          onClick={() => setQrModalOpen(true)}
+          className="flex items-center gap-1.5 h-7 px-2.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-mono transition cursor-pointer border border-slate-700"
+          title="Open Permanent Live QR Code for Mobile & Presentation Evaluation"
+        >
+          <QrCode className="w-3 h-3 text-teal-400" />
+          <span className="hidden sm:inline">QR</span>
+        </button>
+
         {/* =================================================
             RESET
         ================================================= */}
-
         <button
           onClick={resetDemo}
           className="
@@ -709,6 +715,8 @@ export const Header: React.FC<HeaderProps> = () => {
         </div>
       )}
 
+      {/* Live Permanent QR Code Modal */}
+      <LiveQRCodeModal isOpen={qrModalOpen} onClose={() => setQrModalOpen(false)} />
     </header>
   );
 };
