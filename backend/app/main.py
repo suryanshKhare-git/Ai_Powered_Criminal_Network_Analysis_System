@@ -1,22 +1,43 @@
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
+
 from .config import settings
-from .routers import search, entities, cases, reviews, records, audit
+from .routers import (
+    search,
+    entities,
+    cases,
+    reviews,
+    records,
+    audit,
+    auth,
+)
+
 from .core.rate_limiter import rate_limiter
+
+
+# =========================================================
+# FASTAPI APPLICATION
+# =========================================================
 
 app = FastAPI(
     title=settings.app_name,
     version=settings.version,
     description=(
-        "SETU (सेतु) Law-Enforcement Record-Linking & Explainable Network Graph Platform. "
-        "Provides normalized ingestion, 3-tier entity resolution, bounded graph traversal, "
-        "grounded explanation generation, cross-case linkage detection, and tamper-evident audit logging."
+        "SETU (सेतु) Law-Enforcement Record-Linking & Explainable "
+        "Network Graph Platform. Provides normalized ingestion, "
+        "3-tier entity resolution, bounded graph traversal, "
+        "grounded explanation generation, cross-case linkage "
+        "detection, and tamper-evident audit logging."
     ),
     docs_url="/docs",
-    redoc_url="/redoc"
+    redoc_url="/redoc",
 )
 
-# CORS middleware for local frontend connectivity
+
+# =========================================================
+# CORS
+# =========================================================
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins,
@@ -25,48 +46,130 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Rate Limiter & Anomaly Detection Middleware
+
+# =========================================================
+# RATE LIMITER & ANOMALY DETECTION
+# =========================================================
+
 @app.middleware("http")
-async def rate_limit_middleware(request: Request, call_next):
-    client_ip = request.client.host if request.client else "127.0.0.1"
-    badge = request.headers.get("X-Officer-Badge", "ANON_OPERATOR")
-    
-    # Check rate limits on API routes
-    if request.url.path.startswith(settings.api_v1_prefix):
+async def rate_limit_middleware(
+    request: Request,
+    call_next,
+):
+    client_ip = (
+        request.client.host
+        if request.client
+        else "127.0.0.1"
+    )
+
+    badge = request.headers.get(
+        "X-Officer-Badge",
+        "ANON_OPERATOR",
+    )
+
+    # Apply rate limiting only to API routes
+    if request.url.path.startswith(
+        settings.api_v1_prefix
+    ):
         allowed, msg = rate_limiter.check_request(
             client_ip=client_ip,
             officer_badge=badge,
-            endpoint=request.url.path
+            endpoint=request.url.path,
         )
+
         if not allowed:
-            return Response(content=msg, status_code=429, media_type="text/plain")
+            return Response(
+                content=msg,
+                status_code=429,
+                media_type="text/plain",
+            )
 
     response = await call_next(request)
+
     return response
 
-# Mount API Routers
-app.include_router(search.router, prefix=settings.api_v1_prefix)
-app.include_router(entities.router, prefix=settings.api_v1_prefix)
-app.include_router(cases.router, prefix=settings.api_v1_prefix)
-app.include_router(reviews.router, prefix=settings.api_v1_prefix)
-app.include_router(records.router, prefix=settings.api_v1_prefix)
-app.include_router(audit.router, prefix=settings.api_v1_prefix)
 
-@app.get("/health", tags=["Health"])
+# =========================================================
+# API ROUTERS
+# =========================================================
+
+app.include_router(
+    search.router,
+    prefix=settings.api_v1_prefix,
+)
+
+app.include_router(
+    entities.router,
+    prefix=settings.api_v1_prefix,
+)
+
+app.include_router(
+    cases.router,
+    prefix=settings.api_v1_prefix,
+)
+
+app.include_router(
+    reviews.router,
+    prefix=settings.api_v1_prefix,
+)
+
+app.include_router(
+    records.router,
+    prefix=settings.api_v1_prefix,
+)
+
+app.include_router(
+    audit.router,
+    prefix=settings.api_v1_prefix,
+)
+
+# ---------------------------------------------------------
+# AUTH ROUTER
+# ---------------------------------------------------------
+
+app.include_router(
+    auth.router,
+    prefix=settings.api_v1_prefix,
+)
+
+
+# =========================================================
+# HEALTH CHECK
+# =========================================================
+
+@app.get(
+    "/health",
+    tags=["Health"],
+)
 def health_check():
     return {
         "status": "HEALTHY",
         "system": "SETU Enterprise Intelligence Engine",
         "version": settings.version,
-        "classification": "RESTRICTED // LAW ENFORCEMENT SENSITIVE"
+        "classification": (
+            "RESTRICTED // LAW ENFORCEMENT SENSITIVE"
+        ),
     }
 
-@app.get("/", tags=["System"])
+
+# =========================================================
+# ROOT
+# =========================================================
+
+@app.get(
+    "/",
+    tags=["System"],
+)
 def root():
     return {
         "title": settings.app_name,
         "version": settings.version,
         "documentation": "/docs",
-        "jurisdiction": "NCR & Inter-State Crime Branch",
-        "active_case": "FIR No. 492/2024 (Operation Northern Haul)"
+        "jurisdiction": (
+            "NCR & Inter-State Crime Branch"
+        ),
+        "active_case": (
+            "FIR No. 492/2024 "
+            "(Operation Northern Haul)"
+        ),
     }

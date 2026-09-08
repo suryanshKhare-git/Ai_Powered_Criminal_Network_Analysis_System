@@ -35,16 +35,23 @@ const AuthContext = createContext<AuthContextType | undefined>(
   undefined
 );
 
-// FastAPI Backend
+// =========================================================
+// FASTAPI BACKEND
+// =========================================================
+
 const API_URL = 'http://127.0.0.1:8000/api/v1';
+
+// =========================================================
+// AUTH PROVIDER
+// =========================================================
 
 export const AuthProvider: React.FC<{
   children: ReactNode;
 }> = ({ children }) => {
 
-  // =========================================================
-  // RESTORE EXISTING SESSION
-  // =========================================================
+  // =======================================================
+  // RESTORE SESSION
+  // =======================================================
 
   const [investigator, setInvestigator] =
     useState<Investigator | null>(() => {
@@ -58,14 +65,15 @@ export const AuthProvider: React.FC<{
         return JSON.parse(saved);
       } catch {
         localStorage.removeItem('investigator');
+        localStorage.removeItem('access_token');
+
         return null;
       }
     });
 
-
-  // =========================================================
+  // =======================================================
   // LOGIN
-  // =========================================================
+  // =======================================================
 
   const login = async (
     email: string,
@@ -90,62 +98,162 @@ export const AuthProvider: React.FC<{
         }
       );
 
+      // Read response safely
+      const rawText = await response.text();
+
+      console.log(
+        'LOGIN STATUS:',
+        response.status
+      );
+
+      console.log(
+        'LOGIN RESPONSE:',
+        rawText
+      );
+
+      // -----------------------------------------------------
+      // HTTP ERROR
+      // -----------------------------------------------------
+
       if (!response.ok) {
+
+        let message =
+          `Login failed. Server returned ${response.status}.`;
+
+        try {
+          const errorData = JSON.parse(rawText);
+
+          message =
+            errorData.detail ||
+            errorData.message ||
+            errorData.error ||
+            message;
+
+        } catch {
+          if (rawText.trim()) {
+            message = rawText;
+          }
+        }
+
+        console.error(
+          'Login server error:',
+          message
+        );
+
         return false;
       }
 
-      const data = await response.json();
+      // -----------------------------------------------------
+      // PARSE JSON
+      // -----------------------------------------------------
 
-      console.log('Login response:', data);
+      let data: any;
+
+      try {
+        data = JSON.parse(rawText);
+
+      } catch {
+        console.error(
+          'Invalid login response from server.'
+        );
+
+        return false;
+      }
+
+      console.log(
+        'Parsed login response:',
+        data
+      );
+
+      // -----------------------------------------------------
+      // BACKEND SUCCESS CHECK
+      // -----------------------------------------------------
 
       if (!data.success) {
+
+        console.error(
+          'Login rejected:',
+          data.message ||
+          data.detail ||
+          data.error ||
+          'Unknown error'
+        );
+
         return false;
       }
 
-      /*
-       * Backend should return investigator details.
-       * If it doesn't, create a basic investigator object
-       * from the login email for prototype purposes.
-       */
+      // -----------------------------------------------------
+      // INVESTIGATOR DATA
+      // -----------------------------------------------------
 
       const loggedInInvestigator =
         data.investigator || {
           name: 'Investigator',
+
           email: email,
+
           investigatorId: 'INV-001',
+
           mobile: '',
+
           department: 'Investigation',
-          designation: 'Investigation Officer',
+
+          designation:
+            'Investigation Officer',
         };
 
-      setInvestigator(loggedInInvestigator);
+      // -----------------------------------------------------
+      // SAVE REACT STATE
+      // -----------------------------------------------------
+
+      setInvestigator(
+        loggedInInvestigator
+      );
+
+      // -----------------------------------------------------
+      // SAVE SESSION
+      // -----------------------------------------------------
 
       localStorage.setItem(
         'investigator',
-        JSON.stringify(loggedInInvestigator)
+        JSON.stringify(
+          loggedInInvestigator
+        )
       );
 
-      // Save token if backend provides one
+      // -----------------------------------------------------
+      // SAVE TOKEN
+      // -----------------------------------------------------
+
       if (data.access_token) {
+
         localStorage.setItem(
           'access_token',
           data.access_token
         );
+
       }
+
+      console.log(
+        'Login successful'
+      );
 
       return true;
 
     } catch (error) {
-      console.error('Login error:', error);
+
+      console.error(
+        'Login connection error:',
+        error
+      );
 
       return false;
     }
   };
 
-
-  // =========================================================
+  // =======================================================
   // REGISTER
-  // =========================================================
+  // =======================================================
 
   const register = async (
     investigatorData: Investigator,
@@ -153,6 +261,7 @@ export const AuthProvider: React.FC<{
   ): Promise<boolean> => {
 
     try {
+
       const response = await fetch(
         `${API_URL}/auth/register`,
         {
@@ -164,14 +273,18 @@ export const AuthProvider: React.FC<{
           },
 
           body: JSON.stringify({
-            name: investigatorData.name,
 
-            email: investigatorData.email,
+            name:
+              investigatorData.name,
+
+            email:
+              investigatorData.email,
 
             investigatorId:
               investigatorData.investigatorId,
 
-            mobile: investigatorData.mobile,
+            mobile:
+              investigatorData.mobile,
 
             department:
               investigatorData.department,
@@ -179,52 +292,141 @@ export const AuthProvider: React.FC<{
             designation:
               investigatorData.designation,
 
-            password: password,
+            password:
+              password,
           }),
         }
       );
 
+      // -----------------------------------------------------
+      // READ RAW RESPONSE
+      // -----------------------------------------------------
+
+      const rawText =
+        await response.text();
+
+      console.log(
+        'REGISTER STATUS:',
+        response.status
+      );
+
+      console.log(
+        'REGISTER RESPONSE:',
+        rawText
+      );
+
+      // -----------------------------------------------------
+      // HTTP ERROR
+      // -----------------------------------------------------
+
       if (!response.ok) {
-        return false;
+
+        let message =
+          `Registration failed. Server returned ${response.status}.`;
+
+        try {
+
+          const errorData =
+            JSON.parse(rawText);
+
+          message =
+            errorData.detail ||
+            errorData.message ||
+            errorData.error ||
+            message;
+
+        } catch {
+
+          if (rawText.trim()) {
+            message = rawText;
+          }
+
+        }
+
+        console.error(
+          'Registration server error:',
+          message
+        );
+
+        throw new Error(message);
       }
 
-      const data = await response.json();
+      // -----------------------------------------------------
+      // PARSE JSON
+      // -----------------------------------------------------
 
-      console.log('Register response:', data);
+      let data: any;
+
+      try {
+
+        data =
+          JSON.parse(rawText);
+
+      } catch {
+
+        throw new Error(
+          'Invalid response received from authentication server.'
+        );
+
+      }
+
+      console.log(
+        'Parsed register response:',
+        data
+      );
+
+      // -----------------------------------------------------
+      // SUCCESS CHECK
+      // -----------------------------------------------------
 
       if (!data.success) {
-        return false;
+
+        throw new Error(
+          data.message ||
+          data.detail ||
+          data.error ||
+          'Registration was rejected by the server.'
+        );
+
       }
 
+      console.log(
+        'Registration successful'
+      );
+
       /*
-       * IMPORTANT:
-       *
        * Registration does NOT automatically
-       * log the investigator in.
+       * log the user in.
        *
-       * User will be sent to Login page.
+       * Register.tsx already sends
+       * the user back to Login.
        */
 
       return true;
 
     } catch (error) {
+
       console.error(
         'Registration error:',
         error
       );
 
-      return false;
+      throw error;
     }
   };
 
-
-  // =========================================================
+  // =======================================================
   // LOGOUT
-  // =========================================================
+  // =======================================================
 
   const logout = async (): Promise<void> => {
 
     try {
+
+      const token =
+        localStorage.getItem(
+          'access_token'
+        );
 
       await fetch(
         `${API_URL}/auth/logout`,
@@ -233,6 +435,13 @@ export const AuthProvider: React.FC<{
 
           headers: {
             Accept: 'application/json',
+
+            ...(token
+              ? {
+                  Authorization:
+                    `Bearer ${token}`,
+                }
+              : {}),
           },
         }
       );
@@ -243,32 +452,46 @@ export const AuthProvider: React.FC<{
         'Logout API error:',
         error
       );
+
+    } finally {
+
+      // ---------------------------------------------------
+      // CLEAR REACT SESSION
+      // ---------------------------------------------------
+
+      setInvestigator(null);
+
+      // ---------------------------------------------------
+      // CLEAR LOCAL SESSION
+      // ---------------------------------------------------
+
+      localStorage.removeItem(
+        'investigator'
+      );
+
+      localStorage.removeItem(
+        'access_token'
+      );
+
+      console.log(
+        'Investigator logged out'
+      );
     }
-
-    // Clear React session
-    setInvestigator(null);
-
-    // Clear browser session
-    localStorage.removeItem(
-      'investigator'
-    );
-
-    localStorage.removeItem(
-      'access_token'
-    );
   };
 
-
-  // =========================================================
+  // =======================================================
   // PROVIDER
-  // =========================================================
+  // =======================================================
 
   return (
     <AuthContext.Provider
       value={{
         investigator,
+
         login,
+
         register,
+
         logout,
       }}
     >
@@ -277,21 +500,21 @@ export const AuthProvider: React.FC<{
   );
 };
 
-
-// ===========================================================
-// USE AUTH HOOK
-// ===========================================================
+// =========================================================
+// USE AUTH
+// =========================================================
 
 export const useAuth = () => {
 
-  const context = useContext(
-    AuthContext
-  );
+  const context =
+    useContext(AuthContext);
 
   if (!context) {
+
     throw new Error(
       'useAuth must be used inside AuthProvider'
     );
+
   }
 
   return context;
