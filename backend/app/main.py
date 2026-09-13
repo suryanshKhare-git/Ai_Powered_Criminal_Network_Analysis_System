@@ -14,6 +14,19 @@ from .routers import (
 
 from .core.rate_limiter import rate_limiter
 
+# Database
+from .core.database import engine, Base
+from .models.user import User
+
+
+# =========================================================
+# DATABASE INITIALIZATION
+# =========================================================
+
+# Importing User above registers the users table with SQLAlchemy.
+# This creates the table if it does not already exist.
+Base.metadata.create_all(bind=engine)
+
 
 # =========================================================
 # FASTAPI APPLICATION
