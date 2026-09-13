@@ -139,7 +139,14 @@ def verify_password(
 # ============================================================
 # OTP GENERATOR
 # ============================================================
+DEMO_OTP_MODE = os.getenv("DEMO_OTP_MODE", "false").lower() == "true"
+DEMO_OTP = os.getenv("DEMO_OTP", "123456")
+
+
 def generate_otp() -> str:
+    if DEMO_OTP_MODE:
+        return DEMO_OTP
+
     return str(
         secrets.randbelow(900000) + 100000
     )
@@ -148,6 +155,12 @@ def send_otp_email(
     recipient_email: str,
     otp: str
 ):
+    if DEMO_OTP_MODE:
+        print(
+            f"DEMO OTP MODE: OTP for {recipient_email} is {otp}"
+        )
+        return
+    
     if not RESEND_API_KEY:
         raise RuntimeError(
             "RESEND_API_KEY is missing."
