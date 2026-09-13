@@ -180,14 +180,15 @@ SETU Law-Enforcement Intelligence System
     }
 
     request = Request(
-        "https://api.resend.com/emails",
-        data=json.dumps(payload).encode("utf-8"),
-        headers={
-            "Authorization": f"Bearer {RESEND_API_KEY}",
-            "Content-Type": "application/json"
-        },
-        method="POST"
-    )
+    "https://api.resend.com/emails",
+    data=json.dumps(payload).encode("utf-8"),
+    headers={
+        "Authorization": f"Bearer {RESEND_API_KEY}",
+        "Content-Type": "application/json",
+        "User-Agent": "SETU-Backend/1.0"
+    },
+    method="POST"
+)
 
     try:
         with urlopen(request, timeout=15) as response:
