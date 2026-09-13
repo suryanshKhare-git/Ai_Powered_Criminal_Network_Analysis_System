@@ -1,5 +1,30 @@
-from fastapi import APIRouter, HTTPException
+from datetime import datetime, timedelta, timezone
+import os
+import secrets
+import smtplib
+from email.message import EmailMessage
+
+from dotenv import load_dotenv
+import bcrypt
+from jose import jwt
+from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel, EmailStr
+from sqlalchemy.orm import Session
+
+from ..core.database import get_db
+from ..models.user import User
+
+
+# ============================================================
+# LOAD ENVIRONMENT VARIABLES
+# ============================================================
+
+load_dotenv()
+
+
+# ============================================================
+# ROUTER
+# ============================================================
 
 router = APIRouter(
     prefix="/auth",
@@ -8,10 +33,44 @@ router = APIRouter(
 
 
 # ============================================================
-# PROTOTYPE INVESTIGATOR STORAGE
+# JWT CONFIGURATION
 # ============================================================
 
-investigators = {}
+JWT_SECRET_KEY = os.getenv(
+    "JWT_SECRET_KEY",
+    "setu-development-jwt-secret-change-this-in-production"
+)
+
+JWT_ALGORITHM = "HS256"
+
+ACCESS_TOKEN_EXPIRE_MINUTES = 60
+
+
+# ============================================================
+# SMTP CONFIGURATION
+# ============================================================
+
+SMTP_EMAIL = os.getenv("SMTP_EMAIL")
+SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
+
+SMTP_SERVER = os.getenv(
+    "SMTP_SERVER",
+    "smtp.gmail.com"
+)
+
+SMTP_PORT = int(
+    os.getenv(
+        "SMTP_PORT",
+        "587"
+    )
+)
+
+
+# ============================================================
+# OTP CONFIGURATION
+# ============================================================
+
+OTP_EXPIRE_MINUTES = 10
 
 
 # ============================================================
@@ -28,9 +87,172 @@ class RegisterRequest(BaseModel):
     password: str
 
 
+class VerifyOTPRequest(BaseModel):
+    email: EmailStr
+    otp: str
+
+
 class LoginRequest(BaseModel):
     email: EmailStr
     password: str
+
+
+# ============================================================
+# PASSWORD FUNCTIONS
+# ============================================================
+
+def hash_password(password: str) -> str:
+
+    password_bytes = password.encode("utf-8")
+
+    hashed = bcrypt.hashpw(
+        password_bytes,
+        bcrypt.gensalt()
+    )
+
+    return hashed.decode("utf-8")
+
+
+def verify_password(
+    plain_password: str,
+    hashed_password: str
+) -> bool:
+
+    try:
+
+        return bcrypt.checkpw(
+            plain_password.encode("utf-8"),
+            hashed_password.encode("utf-8")
+        )
+
+    except (ValueError, TypeError):
+
+        return False
+
+
+# ============================================================
+# OTP GENERATOR
+# ============================================================
+
+def generate_otp() -> str:
+
+    return str(
+        secrets.randbelow(900000) + 100000
+    )
+
+
+# ============================================================
+# SEND OTP EMAIL
+# ============================================================
+
+def send_otp_email(
+    recipient_email: str,
+    otp: str
+):
+
+    # --------------------------------------------------------
+    # CHECK SMTP CONFIGURATION
+    # --------------------------------------------------------
+
+    if not SMTP_EMAIL or not SMTP_PASSWORD:
+
+        raise RuntimeError(
+            "SMTP email configuration is missing. "
+            "Please configure SMTP_EMAIL and "
+            "SMTP_PASSWORD in .env"
+        )
+
+    # --------------------------------------------------------
+    # CREATE EMAIL
+    # --------------------------------------------------------
+
+    message = EmailMessage()
+
+    message["Subject"] = (
+        "SETU Investigator Account Verification OTP"
+    )
+
+    message["From"] = SMTP_EMAIL
+
+    message["To"] = recipient_email
+
+    message.set_content(
+        f"""
+Hello Investigator,
+
+Your SETU account verification OTP is:
+
+{otp}
+
+This OTP is valid for {OTP_EXPIRE_MINUTES} minutes.
+
+Please do not share this OTP with anyone.
+
+If you did not request this verification,
+please ignore this email.
+
+Regards,
+SETU Law-Enforcement Intelligence System
+"""
+    )
+
+    # --------------------------------------------------------
+    # CONNECT TO GMAIL SMTP
+    # --------------------------------------------------------
+
+    with smtplib.SMTP(
+        SMTP_SERVER,
+        SMTP_PORT
+    ) as server:
+
+        server.ehlo()
+
+        server.starttls()
+
+        server.ehlo()
+
+        server.login(
+            SMTP_EMAIL,
+            SMTP_PASSWORD
+        )
+
+        server.send_message(message)
+
+
+# ============================================================
+# JWT TOKEN
+# ============================================================
+
+def create_access_token(user: User) -> str:
+
+    expire = (
+        datetime.now(timezone.utc)
+        + timedelta(
+            minutes=ACCESS_TOKEN_EXPIRE_MINUTES
+        )
+    )
+
+    payload = {
+
+        "sub": str(user.id),
+
+        "email": user.email,
+
+        "investigatorId":
+            user.investigator_id,
+
+        "role":
+            user.role,
+
+        "exp":
+            expire
+    }
+
+    return jwt.encode(
+        payload,
+        JWT_SECRET_KEY,
+        algorithm=JWT_ALGORITHM
+    )
 
 
 # ============================================================
@@ -38,42 +260,523 @@ class LoginRequest(BaseModel):
 # ============================================================
 
 @router.post("/register")
-def register(data: RegisterRequest):
+def register(
+    data: RegisterRequest,
+    db: Session = Depends(get_db)
+):
 
-    email = str(data.email).lower().strip()
+    email = (
+        str(data.email)
+        .lower()
+        .strip()
+    )
 
-    # Check if investigator already exists
-    if email in investigators:
+    investigator_id = (
+        data.investigatorId.strip()
+    )
+
+    # --------------------------------------------------------
+    # CHECK EXISTING EMAIL
+    # --------------------------------------------------------
+
+    existing_email = (
+        db.query(User)
+        .filter(
+            User.email == email
+        )
+        .first()
+    )
+
+    if existing_email:
+
         raise HTTPException(
             status_code=400,
-            detail="Investigator already registered"
+            detail=(
+                "Investigator with this email "
+                "is already registered"
+            )
         )
 
-    # Store prototype investigator
-    investigators[email] = {
-        "name": data.name,
-        "email": email,
-        "investigatorId": data.investigatorId,
-        "mobile": data.mobile,
-        "department": data.department,
-        "designation": data.designation,
-        "password": data.password,
-        "role": "investigator"
-    }
+    # --------------------------------------------------------
+    # CHECK EXISTING INVESTIGATOR ID
+    # --------------------------------------------------------
+
+    existing_id = (
+        db.query(User)
+        .filter(
+            User.investigator_id ==
+            investigator_id
+        )
+        .first()
+    )
+
+    if existing_id:
+
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "Investigator ID is already registered"
+            )
+        )
+
+    # --------------------------------------------------------
+    # GENERATE OTP
+    # --------------------------------------------------------
+
+    otp = generate_otp()
+
+    otp_expires_at = (
+        datetime.now(timezone.utc)
+        + timedelta(
+            minutes=OTP_EXPIRE_MINUTES
+        )
+    )
+
+    # --------------------------------------------------------
+    # HASH PASSWORD
+    # --------------------------------------------------------
+
+    password_hash = hash_password(
+        data.password
+    )
+
+    # --------------------------------------------------------
+    # CREATE USER
+    # --------------------------------------------------------
+
+    new_user = User(
+
+        name=data.name.strip(),
+
+        email=email,
+
+        investigator_id=investigator_id,
+
+        mobile=data.mobile.strip(),
+
+        department=data.department.strip(),
+
+        designation=data.designation.strip(),
+
+        password_hash=password_hash,
+
+        role="investigator",
+
+        is_verified=False,
+
+        verification_token=None,
+
+        verification_otp=otp,
+
+        otp_expires_at=otp_expires_at
+    )
+
+    # --------------------------------------------------------
+    # SAVE USER
+    # --------------------------------------------------------
+
+    try:
+
+        db.add(new_user)
+
+        db.commit()
+
+        db.refresh(new_user)
+
+    except Exception as error:
+
+        db.rollback()
+
+        print(
+            "DATABASE REGISTER ERROR:",
+            error
+        )
+
+        raise HTTPException(
+            status_code=500,
+            detail=(
+                "Unable to create investigator account"
+            )
+        )
+
+    # --------------------------------------------------------
+    # SEND OTP
+    # --------------------------------------------------------
+
+    try:
+
+        send_otp_email(
+            recipient_email=email,
+            otp=otp
+        )
+
+    except Exception as error:
+
+        # Remove account if email sending fails
+        try:
+
+            db.delete(new_user)
+
+            db.commit()
+
+        except Exception:
+
+            db.rollback()
+
+        print(
+            "OTP EMAIL ERROR:",
+            error
+        )
+
+        raise HTTPException(
+            status_code=500,
+            detail=(
+                "Account could not be created because "
+                "OTP email could not be sent. "
+                "Please check SMTP configuration."
+            )
+        )
+
+    # --------------------------------------------------------
+    # RESPONSE
+    # --------------------------------------------------------
 
     return {
+
         "success": True,
-        "message": "Investigator registered successfully",
+
+        "message": (
+            "Investigator registered successfully. "
+            "A verification OTP has been sent "
+            "to your email."
+        ),
+
+        "verification_required": True,
 
         "investigator": {
-            "name": data.name,
-            "email": email,
-            "investigatorId": data.investigatorId,
-            "mobile": data.mobile,
-            "department": data.department,
-            "designation": data.designation,
-            "role": "investigator"
+
+            "name":
+                new_user.name,
+
+            "email":
+                new_user.email,
+
+            "investigatorId":
+                new_user.investigator_id,
+
+            "mobile":
+                new_user.mobile,
+
+            "department":
+                new_user.department,
+
+            "designation":
+                new_user.designation,
+
+            "role":
+                new_user.role
         }
+    }
+
+
+# ============================================================
+# VERIFY OTP
+# ============================================================
+
+@router.post("/verify-otp")
+def verify_otp(
+    data: VerifyOTPRequest,
+    db: Session = Depends(get_db)
+):
+
+    email = (
+        str(data.email)
+        .lower()
+        .strip()
+    )
+
+    otp = data.otp.strip()
+
+    # --------------------------------------------------------
+    # VALIDATE OTP FORMAT
+    # --------------------------------------------------------
+
+    if not otp.isdigit() or len(otp) != 6:
+
+        raise HTTPException(
+            status_code=400,
+            detail="OTP must be a 6-digit number"
+        )
+
+    # --------------------------------------------------------
+    # FIND USER
+    # --------------------------------------------------------
+
+    user = (
+        db.query(User)
+        .filter(
+            User.email == email
+        )
+        .first()
+    )
+
+    if not user:
+
+        raise HTTPException(
+            status_code=404,
+            detail="Investigator account not found"
+        )
+
+    # --------------------------------------------------------
+    # ALREADY VERIFIED
+    # --------------------------------------------------------
+
+    if user.is_verified:
+
+        return {
+
+            "success": True,
+
+            "message":
+                "Email is already verified"
+        }
+
+    # --------------------------------------------------------
+    # CHECK OTP EXISTS
+    # --------------------------------------------------------
+
+    if not user.verification_otp:
+
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "No active OTP found. "
+                "Please request a new OTP."
+            )
+        )
+
+    # --------------------------------------------------------
+    # CHECK OTP EXPIRATION
+    # --------------------------------------------------------
+
+    now = datetime.now(timezone.utc)
+
+    if (
+        not user.otp_expires_at
+        or user.otp_expires_at < now
+    ):
+
+        user.verification_otp = None
+
+        user.otp_expires_at = None
+
+        db.commit()
+
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "OTP has expired. "
+                "Please request a new OTP."
+            )
+        )
+
+    # --------------------------------------------------------
+    # CHECK OTP
+    # --------------------------------------------------------
+
+    if user.verification_otp != otp:
+
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid OTP"
+        )
+
+    # --------------------------------------------------------
+    # VERIFY ACCOUNT
+    # --------------------------------------------------------
+
+    user.is_verified = True
+
+    user.verification_otp = None
+
+    user.otp_expires_at = None
+
+    user.verification_token = None
+
+    try:
+
+        db.commit()
+
+        db.refresh(user)
+
+    except Exception as error:
+
+        db.rollback()
+
+        print(
+            "OTP VERIFICATION DATABASE ERROR:",
+            error
+        )
+
+        raise HTTPException(
+            status_code=500,
+            detail="Unable to verify account"
+        )
+
+    # --------------------------------------------------------
+    # RESPONSE
+    # --------------------------------------------------------
+
+    return {
+
+        "success": True,
+
+        "message": (
+            "Email verified successfully. "
+            "You can now login."
+        ),
+
+        "investigator": {
+
+            "name":
+                user.name,
+
+            "email":
+                user.email,
+
+            "investigatorId":
+                user.investigator_id,
+
+            "mobile":
+                user.mobile,
+
+            "department":
+                user.department,
+
+            "designation":
+                user.designation,
+
+            "role":
+                user.role
+        }
+    }
+
+
+# ============================================================
+# RESEND OTP
+# ============================================================
+
+@router.post("/resend-otp")
+def resend_otp(
+    email: EmailStr,
+    db: Session = Depends(get_db)
+):
+
+    email = (
+        str(email)
+        .lower()
+        .strip()
+    )
+
+    # --------------------------------------------------------
+    # FIND USER
+    # --------------------------------------------------------
+
+    user = (
+        db.query(User)
+        .filter(
+            User.email == email
+        )
+        .first()
+    )
+
+    if not user:
+
+        raise HTTPException(
+            status_code=404,
+            detail="Investigator account not found"
+        )
+
+    # --------------------------------------------------------
+    # CHECK VERIFIED
+    # --------------------------------------------------------
+
+    if user.is_verified:
+
+        raise HTTPException(
+            status_code=400,
+            detail="Email is already verified"
+        )
+
+    # --------------------------------------------------------
+    # GENERATE NEW OTP
+    # --------------------------------------------------------
+
+    otp = generate_otp()
+
+    expires_at = (
+        datetime.now(timezone.utc)
+        + timedelta(
+            minutes=OTP_EXPIRE_MINUTES
+        )
+    )
+
+    user.verification_otp = otp
+
+    user.otp_expires_at = expires_at
+
+    try:
+
+        db.commit()
+
+    except Exception as error:
+
+        db.rollback()
+
+        print(
+            "RESEND OTP DATABASE ERROR:",
+            error
+        )
+
+        raise HTTPException(
+            status_code=500,
+            detail="Unable to generate new OTP"
+        )
+
+    # --------------------------------------------------------
+    # SEND NEW OTP
+    # --------------------------------------------------------
+
+    try:
+
+        send_otp_email(
+            recipient_email=email,
+            otp=otp
+        )
+
+    except Exception as error:
+
+        print(
+            "RESEND OTP ERROR:",
+            error
+        )
+
+        raise HTTPException(
+            status_code=500,
+            detail=(
+                "Unable to send OTP email. "
+                "Please check SMTP configuration."
+            )
+        )
+
+    return {
+
+        "success": True,
+
+        "message": (
+            "A new OTP has been sent "
+            "to your email."
+        )
     }
 
 
@@ -82,43 +785,115 @@ def register(data: RegisterRequest):
 # ============================================================
 
 @router.post("/login")
-def login(data: LoginRequest):
+def login(
+    data: LoginRequest,
+    db: Session = Depends(get_db)
+):
 
-    email = str(data.email).lower().strip()
+    email = (
+        str(data.email)
+        .lower()
+        .strip()
+    )
 
-    investigator = investigators.get(email)
+    # --------------------------------------------------------
+    # FIND USER
+    # --------------------------------------------------------
 
-    # Investigator does not exist
-    if not investigator:
+    user = (
+        db.query(User)
+        .filter(
+            User.email == email
+        )
+        .first()
+    )
+
+    # --------------------------------------------------------
+    # USER NOT FOUND
+    # --------------------------------------------------------
+
+    if not user:
+
         raise HTTPException(
             status_code=401,
             detail="Invalid email or password"
         )
 
-    # Wrong password
-    if investigator["password"] != data.password:
+    # --------------------------------------------------------
+    # VERIFY PASSWORD
+    # --------------------------------------------------------
+
+    if not verify_password(
+        data.password,
+        user.password_hash
+    ):
+
         raise HTTPException(
             status_code=401,
             detail="Invalid email or password"
         )
+
+    # --------------------------------------------------------
+    # EMAIL VERIFICATION CHECK
+    # --------------------------------------------------------
+
+    if not user.is_verified:
+
+        raise HTTPException(
+            status_code=403,
+            detail=(
+                "Email is not verified. "
+                "Please verify your email using OTP."
+            )
+        )
+
+    # --------------------------------------------------------
+    # CREATE JWT
+    # --------------------------------------------------------
+
+    access_token = create_access_token(
+        user
+    )
+
+    # --------------------------------------------------------
+    # SUCCESS RESPONSE
+    # --------------------------------------------------------
 
     return {
+
         "success": True,
-        "message": "Login successful",
 
-        # Prototype token only
-        "access_token": "prototype-session-token",
+        "message":
+            "Login successful",
 
-        "token_type": "bearer",
+        "access_token":
+            access_token,
+
+        "token_type":
+            "bearer",
 
         "investigator": {
-            "name": investigator["name"],
-            "email": investigator["email"],
-            "investigatorId": investigator["investigatorId"],
-            "mobile": investigator["mobile"],
-            "department": investigator["department"],
-            "designation": investigator["designation"],
-            "role": investigator["role"]
+
+            "name":
+                user.name,
+
+            "email":
+                user.email,
+
+            "investigatorId":
+                user.investigator_id,
+
+            "mobile":
+                user.mobile,
+
+            "department":
+                user.department,
+
+            "designation":
+                user.designation,
+
+            "role":
+                user.role
         }
     }
 
@@ -131,6 +906,9 @@ def login(data: LoginRequest):
 def logout():
 
     return {
+
         "success": True,
-        "message": "Investigator logged out successfully"
+
+        "message":
+            "Investigator logged out successfully"
     }

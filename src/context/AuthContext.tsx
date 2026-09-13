@@ -15,6 +15,13 @@ interface Investigator {
   role?: string;
 }
 
+interface RegisterResult {
+  success: boolean;
+  verification_required?: boolean;
+  verification_link?: string;
+  message?: string;
+}
+
 interface AuthContextType {
   investigator: Investigator | null;
 
@@ -26,7 +33,7 @@ interface AuthContextType {
   register: (
     investigator: Investigator,
     password: string
-  ) => Promise<boolean>;
+  ) => Promise<RegisterResult>;
 
   logout: () => Promise<void>;
 }
@@ -35,35 +42,18 @@ const AuthContext = createContext<AuthContextType | undefined>(
   undefined
 );
 
-// =========================================================
-// API CONFIG
-// =========================================================
-//
-// LOCAL:
-// http://127.0.0.1:8000/api/v1
-//
-// DEPLOYED:
-// VITE_API_URL=https://your-backend-url/api/v1
-//
-// =========================================================
-
 const API_URL = (
   import.meta.env.VITE_API_URL ||
   'http://127.0.0.1:8000/api/v1'
 ).replace(/\/+$/, '');
 
-
-// =========================================================
-// AUTH PROVIDER
-// =========================================================
-
 export const AuthProvider: React.FC<{
   children: ReactNode;
 }> = ({ children }) => {
 
-  // =======================================================
-  // RESTORE EXISTING SESSION
-  // =======================================================
+  // =========================================================
+  // CURRENT LOGGED-IN INVESTIGATOR
+  // =========================================================
 
   const [investigator, setInvestigator] =
     useState<Investigator | null>(() => {
@@ -86,9 +76,9 @@ export const AuthProvider: React.FC<{
     });
 
 
-  // =======================================================
+  // =========================================================
   // LOGIN
-  // =======================================================
+  // =========================================================
 
   const login = async (
     email: string,
@@ -111,11 +101,8 @@ export const AuthProvider: React.FC<{
           method: 'POST',
 
           headers: {
-            'Content-Type':
-              'application/json',
-
-            Accept:
-              'application/json',
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
           },
 
           body: JSON.stringify({
@@ -124,6 +111,11 @@ export const AuthProvider: React.FC<{
           }),
         }
       );
+
+
+      // -----------------------------------------------------
+      // READ RESPONSE
+      // -----------------------------------------------------
 
       const rawText =
         await response.text();
@@ -139,9 +131,9 @@ export const AuthProvider: React.FC<{
       );
 
 
-      // ---------------------------------------------------
+      // -----------------------------------------------------
       // SERVER ERROR
-      // ---------------------------------------------------
+      // -----------------------------------------------------
 
       if (!response.ok) {
 
@@ -164,7 +156,6 @@ export const AuthProvider: React.FC<{
           if (rawText.trim()) {
             message = rawText;
           }
-
         }
 
         console.error(
@@ -176,9 +167,9 @@ export const AuthProvider: React.FC<{
       }
 
 
-      // ---------------------------------------------------
-      // JSON RESPONSE
-      // ---------------------------------------------------
+      // -----------------------------------------------------
+      // PARSE JSON
+      // -----------------------------------------------------
 
       let data: any;
 
@@ -203,62 +194,65 @@ export const AuthProvider: React.FC<{
       );
 
 
-      // ---------------------------------------------------
-      // SUCCESS
-      // ---------------------------------------------------
+      // =====================================================
+      // IMPORTANT FIX
+      // =====================================================
+      //
+      // Backend successful login response contains
+      // access_token.
+      //
+      // We should NOT depend only on data.success because
+      // backend may not send "success": true.
+      //
+      // =====================================================
 
-      if (!data.success) {
+      if (!data.access_token) {
 
         console.error(
           'Login rejected:',
           data.message ||
           data.detail ||
           data.error ||
-          'Unknown authentication error'
+          'Access token not received from server.'
         );
 
         return false;
       }
 
 
-      // ---------------------------------------------------
-      // INVESTIGATOR DATA
-      // ---------------------------------------------------
+      // -----------------------------------------------------
+      // GET INVESTIGATOR DATA
+      // -----------------------------------------------------
 
       const loggedInInvestigator =
         data.investigator || {
-          name:
-            'Investigator',
 
-          email:
-            email,
+          name: 'Investigator',
 
-          investigatorId:
-            'INV-001',
+          email: email,
 
-          mobile:
-            '',
+          investigatorId: 'INV-001',
 
-          department:
-            'Investigation',
+          mobile: '',
 
-          designation:
-            'Investigation Officer',
+          department: 'Investigation',
+
+          designation: 'Investigation Officer',
         };
 
 
-      // ---------------------------------------------------
-      // SET REACT STATE
-      // ---------------------------------------------------
+      // -----------------------------------------------------
+      // SAVE INVESTIGATOR IN STATE
+      // -----------------------------------------------------
 
       setInvestigator(
         loggedInInvestigator
       );
 
 
-      // ---------------------------------------------------
-      // SAVE INVESTIGATOR
-      // ---------------------------------------------------
+      // -----------------------------------------------------
+      // SAVE INVESTIGATOR IN LOCAL STORAGE
+      // -----------------------------------------------------
 
       localStorage.setItem(
         'investigator',
@@ -268,18 +262,14 @@ export const AuthProvider: React.FC<{
       );
 
 
-      // ---------------------------------------------------
-      // SAVE ACCESS TOKEN
-      // ---------------------------------------------------
+      // -----------------------------------------------------
+      // SAVE JWT TOKEN
+      // -----------------------------------------------------
 
-      if (data.access_token) {
-
-        localStorage.setItem(
-          'access_token',
-          data.access_token
-        );
-
-      }
+      localStorage.setItem(
+        'access_token',
+        data.access_token
+      );
 
 
       console.log(
@@ -300,14 +290,14 @@ export const AuthProvider: React.FC<{
   };
 
 
-  // =======================================================
+  // =========================================================
   // REGISTER
-  // =======================================================
+  // =========================================================
 
   const register = async (
     investigatorData: Investigator,
     password: string
-  ): Promise<boolean> => {
+  ): Promise<RegisterResult> => {
 
     try {
 
@@ -326,11 +316,8 @@ export const AuthProvider: React.FC<{
           method: 'POST',
 
           headers: {
-            'Content-Type':
-              'application/json',
-
-            Accept:
-              'application/json',
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
           },
 
           body: JSON.stringify({
@@ -355,15 +342,17 @@ export const AuthProvider: React.FC<{
 
             password:
               password,
-
           }),
         }
       );
 
 
+      // -----------------------------------------------------
+      // READ RESPONSE
+      // -----------------------------------------------------
+
       const rawText =
         await response.text();
-
 
       console.log(
         'REGISTER STATUS:',
@@ -376,9 +365,9 @@ export const AuthProvider: React.FC<{
       );
 
 
-      // ---------------------------------------------------
+      // -----------------------------------------------------
       // SERVER ERROR
-      // ---------------------------------------------------
+      // -----------------------------------------------------
 
       if (!response.ok) {
 
@@ -401,7 +390,6 @@ export const AuthProvider: React.FC<{
           if (rawText.trim()) {
             message = rawText;
           }
-
         }
 
         console.error(
@@ -409,17 +397,15 @@ export const AuthProvider: React.FC<{
           message
         );
 
-        throw new Error(
-          message
-        );
+        throw new Error(message);
       }
 
 
-      // ---------------------------------------------------
-      // JSON RESPONSE
-      // ---------------------------------------------------
+      // -----------------------------------------------------
+      // PARSE JSON
+      // -----------------------------------------------------
 
-      let data: any;
+      let data: RegisterResult;
 
       try {
 
@@ -440,16 +426,14 @@ export const AuthProvider: React.FC<{
       );
 
 
-      // ---------------------------------------------------
-      // SUCCESS CHECK
-      // ---------------------------------------------------
+      // -----------------------------------------------------
+      // CHECK REGISTRATION
+      // -----------------------------------------------------
 
       if (!data.success) {
 
         throw new Error(
           data.message ||
-          data.detail ||
-          data.error ||
           'Registration was rejected by the server.'
         );
       }
@@ -460,11 +444,7 @@ export const AuthProvider: React.FC<{
       );
 
 
-      // ---------------------------------------------------
-      // REGISTRATION DOES NOT AUTO LOGIN
-      // ---------------------------------------------------
-
-      return true;
+      return data;
 
     } catch (error) {
 
@@ -478,9 +458,9 @@ export const AuthProvider: React.FC<{
   };
 
 
-  // =======================================================
+  // =========================================================
   // LOGOUT
-  // =======================================================
+  // =========================================================
 
   const logout = async (): Promise<void> => {
 
@@ -491,18 +471,18 @@ export const AuthProvider: React.FC<{
           'access_token'
         );
 
+
       await fetch(
         `${API_URL}/auth/logout`,
         {
           method: 'POST',
 
           headers: {
-            Accept:
-              'application/json',
+            'Accept': 'application/json',
 
             ...(token
               ? {
-                  Authorization:
+                  'Authorization':
                     `Bearer ${token}`,
                 }
               : {}),
@@ -519,16 +499,16 @@ export const AuthProvider: React.FC<{
 
     } finally {
 
-      // ---------------------------------------------------
-      // CLEAR REACT STATE
-      // ---------------------------------------------------
+      // -----------------------------------------------------
+      // CLEAR STATE
+      // -----------------------------------------------------
 
       setInvestigator(null);
 
 
-      // ---------------------------------------------------
-      // CLEAR LOCAL SESSION
-      // ---------------------------------------------------
+      // -----------------------------------------------------
+      // CLEAR LOCAL STORAGE
+      // -----------------------------------------------------
 
       localStorage.removeItem(
         'investigator'
@@ -546,9 +526,9 @@ export const AuthProvider: React.FC<{
   };
 
 
-  // =======================================================
-  // PROVIDER
-  // =======================================================
+  // =========================================================
+  // AUTH CONTEXT PROVIDER
+  // =========================================================
 
   return (
     <AuthContext.Provider
@@ -565,9 +545,9 @@ export const AuthProvider: React.FC<{
 };
 
 
-// =========================================================
-// USE AUTH
-// =========================================================
+// ===========================================================
+// USE AUTH HOOK
+// ===========================================================
 
 export const useAuth = () => {
 
