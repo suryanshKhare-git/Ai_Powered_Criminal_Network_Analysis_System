@@ -139,6 +139,11 @@ def verify_password(
 # ============================================================
 # OTP GENERATOR
 # ============================================================
+def generate_otp() -> str:
+    return str(
+        secrets.randbelow(900000) + 100000
+    )
+
 def send_otp_email(
     recipient_email: str,
     otp: str
