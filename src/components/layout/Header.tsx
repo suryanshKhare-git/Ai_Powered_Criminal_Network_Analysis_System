@@ -14,14 +14,16 @@ import {
   LogOut,
   ShieldCheck,
   QrCode,
+  Menu,
 } from 'lucide-react';
 import { LiveQRCodeModal } from '../common/LiveQRCodeModal';
 
 interface HeaderProps {
   onOpenShortcuts?: () => void;
+  onOpenSidebar?: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = () => {
+export const Header: React.FC<HeaderProps> = ({ onOpenSidebar }) => {
   const {
     currentRole,
     setRole,
@@ -55,9 +57,24 @@ export const Header: React.FC<HeaderProps> = () => {
     }
   };
 
+  const handlePresentationMode = async () => {
+    const enteringPresentation = !isPresentationMode;
+    togglePresentationMode();
+
+    try {
+      if (enteringPresentation && !document.fullscreenElement) {
+        await document.documentElement.requestFullscreen();
+      } else if (!enteringPresentation && document.fullscreenElement) {
+        await document.exitFullscreen();
+      }
+    } catch {
+      // Fullscreen can be declined by the browser; focus mode still applies.
+    }
+  };
+
   return (
     <header
-      className="
+      className="casework-header
         h-12
         w-full
         bg-[#0E1420]
@@ -80,6 +97,14 @@ export const Header: React.FC<HeaderProps> = () => {
       ================================================= */}
 
       <div className="flex items-center gap-2.5 text-xs min-w-0">
+
+        <button
+          onClick={onOpenSidebar}
+          className="mobile-menu-toggle"
+          aria-label="Open navigation"
+        >
+          <Menu className="w-5 h-5" />
+        </button>
 
         <div className="flex items-center gap-2 text-slate-300 min-w-0">
 
@@ -181,8 +206,9 @@ export const Header: React.FC<HeaderProps> = () => {
         ================================================= */}
 
         <button
-          onClick={togglePresentationMode}
+          onClick={handlePresentationMode}
           className={`
+            presentation-toggle
             flex
             items-center
             gap-1.5
@@ -213,7 +239,7 @@ export const Header: React.FC<HeaderProps> = () => {
         {/* Live Permanent QR Code Button */}
         <button
           onClick={() => setQrModalOpen(true)}
-          className="flex items-center gap-1.5 h-7 px-2.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-mono transition cursor-pointer border border-slate-700"
+          className="qr-toggle flex items-center gap-1.5 h-7 px-2.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-mono transition cursor-pointer border border-slate-700"
           title="Open Permanent Live QR Code for Mobile & Presentation Evaluation"
         >
           <QrCode className="w-3 h-3 text-teal-400" />
@@ -225,7 +251,7 @@ export const Header: React.FC<HeaderProps> = () => {
         ================================================= */}
         <button
           onClick={resetDemo}
-          className="
+          className="reset-toggle
             flex
             items-center
             gap-1.5
@@ -262,7 +288,7 @@ export const Header: React.FC<HeaderProps> = () => {
               setRoleMenuOpen(prev => !prev);
               setProfileMenuOpen(false);
             }}
-            className="
+            className="role-toggle
               flex
               items-center
               gap-1.5
@@ -381,7 +407,7 @@ export const Header: React.FC<HeaderProps> = () => {
               setProfileMenuOpen(prev => !prev);
               setRoleMenuOpen(false);
             }}
-            className="
+            className="profile-toggle
               flex
               items-center
               gap-2

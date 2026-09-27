@@ -17,12 +17,13 @@ export const HomePage: React.FC = () => {
   } = useApp();
 
   return (
-    <div className="flex-1 overflow-y-auto bg-[#0B0F17] text-slate-100 p-8 sm:p-12 select-none font-sans">
-      <div className="max-w-4xl mx-auto space-y-8">
+    <div className="casework-page flex-1 overflow-y-auto bg-[#0B0F17] text-slate-100 p-8 sm:p-12 select-none font-sans">
+      <div className="max-w-6xl mx-auto space-y-8">
         {/* A. HEADER */}
         <div className="space-y-1">
-          <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
-            SETU
+          <div className="eyebrow">Investigation control room</div>
+          <h1 className="text-3xl sm:text-4xl font-bold text-white tracking-tight">
+            Casework overview
           </h1>
           <p className="text-sm text-slate-400">
             {selectedCase

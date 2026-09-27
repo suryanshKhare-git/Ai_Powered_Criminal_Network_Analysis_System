@@ -161,9 +161,9 @@ def send_otp_email(
         )
         return
     
-    if not RESEND_API_KEY:
+    if not RESEND_API_KEY and not (SMTP_EMAIL and SMTP_PASSWORD):
         raise RuntimeError(
-            "RESEND_API_KEY is missing."
+            "No email provider is configured. Set RESEND_API_KEY or SMTP credentials."
         )
 
     subject = "SETU Investigator Account Verification OTP"
@@ -192,52 +192,39 @@ SETU Law-Enforcement Intelligence System
         "text": body
     }
 
-    request = Request(
-    "https://api.resend.com/emails",
-    data=json.dumps(payload).encode("utf-8"),
-    headers={
-        "Authorization": f"Bearer {RESEND_API_KEY}",
-        "Content-Type": "application/json",
-        "User-Agent": "SETU-Backend/1.0"
-    },
-    method="POST"
-)
-
-    try:
-        with urlopen(request, timeout=15) as response:
-            response.read()
-
-    except HTTPError as e:
-        error_body = e.read().decode("utf-8", errors="ignore")
-        raise RuntimeError(
-            f"Resend email failed: {error_body}"
+    if RESEND_API_KEY:
+        request = Request(
+            "https://api.resend.com/emails",
+            data=json.dumps(payload).encode("utf-8"),
+            headers={
+                "Authorization": f"Bearer {RESEND_API_KEY}",
+                "Content-Type": "application/json",
+                "User-Agent": "SETU-Backend/1.0"
+            },
+            method="POST"
         )
 
-    except URLError as e:
-        raise RuntimeError(
-            f"Resend network error: {e}"
-        )
+        try:
+            with urlopen(request, timeout=15) as response:
+                response.read()
+            return
+        except HTTPError as e:
+            error_body = e.read().decode("utf-8", errors="ignore")
+            raise RuntimeError(f"Resend email failed: {error_body}")
+        except URLError as e:
+            raise RuntimeError(f"Resend network error: {e}")
 
-    # --------------------------------------------------------
-    # CONNECT TO GMAIL SMTP
-    # --------------------------------------------------------
+    message = EmailMessage()
+    message["Subject"] = subject
+    message["From"] = SMTP_EMAIL
+    message["To"] = recipient_email
+    message.set_content(body)
 
-    with smtplib.SMTP(
-        SMTP_SERVER,
-        SMTP_PORT
-    ) as server:
-
+    with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
         server.ehlo()
-
         server.starttls()
-
         server.ehlo()
-
-        server.login(
-            SMTP_EMAIL,
-            SMTP_PASSWORD
-        )
-
+        server.login(SMTP_EMAIL, SMTP_PASSWORD)
         server.send_message(message)
 
 
@@ -582,10 +569,16 @@ def verify_otp(
     # --------------------------------------------------------
 
     now = datetime.now(timezone.utc)
+    otp_expires_at = user.otp_expires_at
+
+    # SQLite returns DATETIME values without timezone information, while
+    # PostgreSQL preserves it. Normalize both forms before comparing.
+    if otp_expires_at and otp_expires_at.tzinfo is None:
+        otp_expires_at = otp_expires_at.replace(tzinfo=timezone.utc)
 
     if (
-        not user.otp_expires_at
-        or user.otp_expires_at < now
+        not otp_expires_at
+        or otp_expires_at < now
     ):
 
         user.verification_otp = None

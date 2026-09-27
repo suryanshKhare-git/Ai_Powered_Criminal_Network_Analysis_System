@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { Entity, EntityType } from '../../types';
 import { ConfidenceMeter } from '../common/ConfidenceMeter';
+import { BehavioralAnalysis } from './BehavioralAnalysis';
 import {
   User,
   Phone,
@@ -502,6 +503,15 @@ export const EntityProfileView: React.FC = () => {
           </div>
         )}
       </div>
+
+      {activeEntity.type === 'person' && (
+        <BehavioralAnalysis
+          entity={activeEntity}
+          connectedEdges={connectedEdges}
+          relatedRecords={relatedRawRecords}
+          onInspectEvidence={inspectEvidenceByDocRef}
+        />
+      )}
     </div>
   );
 };

@@ -9,21 +9,21 @@ export default {
     extend: {
       colors: {
         setu: {
-          bg: '#0B0F17',
-          surface: '#111827',
-          card: '#162032',
-          border: '#1E293B',
-          borderLight: '#2A384F',
-          muted: '#64748B',
-          textMuted: '#94A3B8',
-          text: '#F8FAFC',
-          accent: '#0D9488', // Institutional deep teal
-          accentHover: '#0F766E',
-          accentLight: '#14B8A6',
-          lead: '#D97706', // Muted amber for active investigative leads
-          leadHover: '#B45309',
-          auditAlert: '#DC2626', // Controlled red reserved strictly for alerts
-          verified: '#10B981', // Muted emerald for human-verified status
+          bg: '#e9e5dc',
+          surface: '#f7f5ef',
+          card: '#ffffff',
+          border: '#d8d1c4',
+          borderLight: '#c5bcad',
+          muted: '#706b62',
+          textMuted: '#5f5b54',
+          text: '#182433',
+          accent: '#a33b32',
+          accentHover: '#822e27',
+          accentLight: '#c45247',
+          lead: '#a66b1f',
+          leadHover: '#855418',
+          auditAlert: '#a33b32',
+          verified: '#39735c',
         },
       },
       fontFamily: {

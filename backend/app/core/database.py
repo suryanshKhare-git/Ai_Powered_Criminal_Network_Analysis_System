@@ -7,17 +7,11 @@ import os
 # DATABASE CONFIGURATION
 # ============================================================
 
-# PostgreSQL database
-#
-# You can also set DATABASE_URL as an environment variable.
-# Otherwise this default URL will be used.
-#
-# IMPORTANT:
-# Replace YOUR_PASSWORD with your PostgreSQL password.
-
+# A local SQLite database makes the application runnable immediately after
+# cloning. Deployments can continue to supply a PostgreSQL DATABASE_URL.
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    "postgresql+psycopg2://postgres:0730@localhost:5432/setu_db"
+    "sqlite:///./setu.db"
 )
 
 
@@ -25,11 +19,15 @@ DATABASE_URL = os.getenv(
 # DATABASE ENGINE
 # ============================================================
 
-engine = create_engine(
-    DATABASE_URL,
-    pool_pre_ping=True,
-    echo=False
-)
+engine_options = {
+    "pool_pre_ping": True,
+    "echo": False,
+}
+
+if DATABASE_URL.startswith("sqlite"):
+    engine_options["connect_args"] = {"check_same_thread": False}
+
+engine = create_engine(DATABASE_URL, **engine_options)
 
 
 # ============================================================
