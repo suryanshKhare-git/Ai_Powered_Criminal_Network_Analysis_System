@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useMemo } from 'react';
 import { useInvestigation } from '@/context/InvestigationContext';
 import {
@@ -7,10 +9,6 @@ import {
 } from 'lucide-react';
 import { formatAddress, getConfidenceColor } from '@/utils/formatters';
 import Link from 'next/link';
-
-export function generateStaticParams() {
-  return [];
-}
 
 export default function InvestigationsPage() {
   const { allCases, currentCase, loadCase } = useInvestigation();
