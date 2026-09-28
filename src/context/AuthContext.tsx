@@ -1,565 +1,113 @@
-import React, {
-  createContext,
-  useContext,
-  useState,
-  ReactNode,
-} from 'react';
+'use client';
 
-interface Investigator {
+import React, { createContext, useContext, useEffect, useState } from 'react';
+
+export interface UserSession {
+  id: string;
   name: string;
-  email: string;
-  investigatorId: string;
-  mobile: string;
-  department: string;
-  designation: string;
-  role?: string;
-}
-
-interface RegisterResult {
-  success: boolean;
-  verification_required?: boolean;
-  verification_link?: string;
-  message?: string;
+  badge: string;
+  role: string;
+  unit: string;
+  clearance: string;
+  loginTime: string;
 }
 
 interface AuthContextType {
-  investigator: Investigator | null;
-
-  login: (
-    email: string,
-    password: string
-  ) => Promise<boolean>;
-
-  register: (
-    investigator: Investigator,
-    password: string
-  ) => Promise<RegisterResult>;
-
-  logout: () => Promise<void>;
+  isAuthenticated: boolean;
+  isInitialized: boolean;
+  user: UserSession | null;
+  login: (id: string, pin: string) => { success: boolean; error?: string };
+  logout: () => void;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(
-  undefined
-);
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const API_URL = (
-  import.meta.env.VITE_API_URL ||
-  'http://127.0.0.1:8000/api/v1'
-).replace(/\/+$/, '');
+const AUTH_STORAGE_KEY = 'chaintrace_auth_session';
 
-export const AuthProvider: React.FC<{
-  children: ReactNode;
-}> = ({ children }) => {
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [isInitialized, setIsInitialized] = useState<boolean>(false);
+  const [user, setUser] = useState<UserSession | null>(null);
 
-  // =========================================================
-  // CURRENT LOGGED-IN INVESTIGATOR
-  // =========================================================
-
-  const [investigator, setInvestigator] =
-    useState<Investigator | null>(() => {
-
-      const saved =
-        localStorage.getItem('investigator');
-
-      if (!saved) {
-        return null;
-      }
-
-      try {
-        return JSON.parse(saved);
-      } catch {
-        localStorage.removeItem('investigator');
-        localStorage.removeItem('access_token');
-
-        return null;
-      }
-    });
-
-
-  // =========================================================
-  // LOGIN
-  // =========================================================
-
-  const login = async (
-    email: string,
-    password: string
-  ): Promise<boolean> => {
-
+  useEffect(() => {
     try {
-
-      const endpoint =
-        `${API_URL}/auth/login`;
-
-      console.log(
-        'LOGIN API:',
-        endpoint
-      );
-
-      const response = await fetch(
-        endpoint,
-        {
-          method: 'POST',
-
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-          },
-
-          body: JSON.stringify({
-            email,
-            password,
-          }),
+      const savedSession = localStorage.getItem(AUTH_STORAGE_KEY);
+      if (savedSession) {
+        const parsed = JSON.parse(savedSession);
+        if (parsed && parsed.id) {
+          setUser(parsed);
+          setIsAuthenticated(true);
         }
-      );
-
-
-      // -----------------------------------------------------
-      // READ RESPONSE
-      // -----------------------------------------------------
-
-      const rawText =
-        await response.text();
-
-      console.log(
-        'LOGIN STATUS:',
-        response.status
-      );
-
-      console.log(
-        'LOGIN RESPONSE:',
-        rawText
-      );
-
-
-      // -----------------------------------------------------
-      // SERVER ERROR
-      // -----------------------------------------------------
-
-      if (!response.ok) {
-
-        let message =
-          `Login failed. Server returned ${response.status}.`;
-
-        try {
-
-          const errorData =
-            JSON.parse(rawText);
-
-          message =
-            errorData.detail ||
-            errorData.message ||
-            errorData.error ||
-            message;
-
-        } catch {
-
-          if (rawText.trim()) {
-            message = rawText;
-          }
-        }
-
-        console.error(
-          'Login server error:',
-          message
-        );
-
-        return false;
       }
-
-
-      // -----------------------------------------------------
-      // PARSE JSON
-      // -----------------------------------------------------
-
-      let data: any;
-
-      try {
-
-        data =
-          JSON.parse(rawText);
-
-      } catch {
-
-        console.error(
-          'Invalid JSON received from login server.'
-        );
-
-        return false;
-      }
-
-
-      console.log(
-        'PARSED LOGIN RESPONSE:',
-        data
-      );
-
-
-      // =====================================================
-      // IMPORTANT FIX
-      // =====================================================
-      //
-      // Backend successful login response contains
-      // access_token.
-      //
-      // We should NOT depend only on data.success because
-      // backend may not send "success": true.
-      //
-      // =====================================================
-
-      if (!data.access_token) {
-
-        console.error(
-          'Login rejected:',
-          data.message ||
-          data.detail ||
-          data.error ||
-          'Access token not received from server.'
-        );
-
-        return false;
-      }
-
-
-      // -----------------------------------------------------
-      // GET INVESTIGATOR DATA
-      // -----------------------------------------------------
-
-      const loggedInInvestigator =
-        data.investigator || {
-
-          name: 'Investigator',
-
-          email: email,
-
-          investigatorId: 'INV-001',
-
-          mobile: '',
-
-          department: 'Investigation',
-
-          designation: 'Investigation Officer',
-        };
-
-
-      // -----------------------------------------------------
-      // SAVE INVESTIGATOR IN STATE
-      // -----------------------------------------------------
-
-      setInvestigator(
-        loggedInInvestigator
-      );
-
-
-      // -----------------------------------------------------
-      // SAVE INVESTIGATOR IN LOCAL STORAGE
-      // -----------------------------------------------------
-
-      localStorage.setItem(
-        'investigator',
-        JSON.stringify(
-          loggedInInvestigator
-        )
-      );
-
-
-      // -----------------------------------------------------
-      // SAVE JWT TOKEN
-      // -----------------------------------------------------
-
-      localStorage.setItem(
-        'access_token',
-        data.access_token
-      );
-
-
-      console.log(
-        'LOGIN SUCCESSFUL'
-      );
-
-      return true;
-
-    } catch (error) {
-
-      console.error(
-        'LOGIN CONNECTION ERROR:',
-        error
-      );
-
-      return false;
-    }
-  };
-
-
-  // =========================================================
-  // REGISTER
-  // =========================================================
-
-  const register = async (
-    investigatorData: Investigator,
-    password: string
-  ): Promise<RegisterResult> => {
-
-    try {
-
-      const endpoint =
-        `${API_URL}/auth/register`;
-
-      console.log(
-        'REGISTER API:',
-        endpoint
-      );
-
-
-      const response = await fetch(
-        endpoint,
-        {
-          method: 'POST',
-
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-          },
-
-          body: JSON.stringify({
-
-            name:
-              investigatorData.name,
-
-            email:
-              investigatorData.email,
-
-            investigatorId:
-              investigatorData.investigatorId,
-
-            mobile:
-              investigatorData.mobile,
-
-            department:
-              investigatorData.department,
-
-            designation:
-              investigatorData.designation,
-
-            password:
-              password,
-          }),
-        }
-      );
-
-
-      // -----------------------------------------------------
-      // READ RESPONSE
-      // -----------------------------------------------------
-
-      const rawText =
-        await response.text();
-
-      console.log(
-        'REGISTER STATUS:',
-        response.status
-      );
-
-      console.log(
-        'REGISTER RESPONSE:',
-        rawText
-      );
-
-
-      // -----------------------------------------------------
-      // SERVER ERROR
-      // -----------------------------------------------------
-
-      if (!response.ok) {
-
-        let message =
-          `Registration failed. Server returned ${response.status}.`;
-
-        try {
-
-          const errorData =
-            JSON.parse(rawText);
-
-          message =
-            errorData.detail ||
-            errorData.message ||
-            errorData.error ||
-            message;
-
-        } catch {
-
-          if (rawText.trim()) {
-            message = rawText;
-          }
-        }
-
-        console.error(
-          'Registration server error:',
-          message
-        );
-
-        throw new Error(message);
-      }
-
-
-      // -----------------------------------------------------
-      // PARSE JSON
-      // -----------------------------------------------------
-
-      let data: RegisterResult;
-
-      try {
-
-        data =
-          JSON.parse(rawText);
-
-      } catch {
-
-        throw new Error(
-          'Invalid response received from authentication server.'
-        );
-      }
-
-
-      console.log(
-        'PARSED REGISTER RESPONSE:',
-        data
-      );
-
-
-      // -----------------------------------------------------
-      // CHECK REGISTRATION
-      // -----------------------------------------------------
-
-      if (!data.success) {
-
-        throw new Error(
-          data.message ||
-          'Registration was rejected by the server.'
-        );
-      }
-
-
-      console.log(
-        'REGISTRATION SUCCESSFUL'
-      );
-
-
-      return data;
-
-    } catch (error) {
-
-      console.error(
-        'REGISTRATION ERROR:',
-        error
-      );
-
-      throw error;
-    }
-  };
-
-
-  // =========================================================
-  // LOGOUT
-  // =========================================================
-
-  const logout = async (): Promise<void> => {
-
-    try {
-
-      const token =
-        localStorage.getItem(
-          'access_token'
-        );
-
-
-      await fetch(
-        `${API_URL}/auth/logout`,
-        {
-          method: 'POST',
-
-          headers: {
-            'Accept': 'application/json',
-
-            ...(token
-              ? {
-                  'Authorization':
-                    `Bearer ${token}`,
-                }
-              : {}),
-          },
-        }
-      );
-
-    } catch (error) {
-
-      console.error(
-        'LOGOUT API ERROR:',
-        error
-      );
-
+    } catch (e) {
+      console.error('Failed to parse auth session from localStorage', e);
     } finally {
-
-      // -----------------------------------------------------
-      // CLEAR STATE
-      // -----------------------------------------------------
-
-      setInvestigator(null);
-
-
-      // -----------------------------------------------------
-      // CLEAR LOCAL STORAGE
-      // -----------------------------------------------------
-
-      localStorage.removeItem(
-        'investigator'
-      );
-
-      localStorage.removeItem(
-        'access_token'
-      );
-
-
-      console.log(
-        'LOGOUT SUCCESSFUL'
-      );
+      setIsInitialized(true);
     }
+  }, []);
+
+  const login = (idInput: string, pinInput: string) => {
+    const cleanId = (idInput || '').trim().toUpperCase();
+    const cleanPin = (pinInput || '').trim();
+
+    // Required demo credentials: ID: DEMO-26182, PIN: 123456
+    if (cleanId === 'DEMO-26182' && cleanPin === '123456') {
+      const sessionData: UserSession = {
+        id: 'DEMO-26182',
+        name: 'Inv. S. Khare',
+        badge: 'NCF-842',
+        role: 'Lead Blockchain Forensics Investigator',
+        unit: 'Cyber Forensics Unit #842',
+        clearance: 'Level 4 Special Access',
+        loginTime: new Date().toISOString()
+      };
+
+      try {
+        localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(sessionData));
+      } catch (e) {
+        console.error('Failed to save auth session', e);
+      }
+
+      setUser(sessionData);
+      setIsAuthenticated(true);
+      return { success: true };
+    }
+
+    return {
+      success: false,
+      error: 'Invalid Investigator ID or PIN.'
+    };
   };
 
-
-  // =========================================================
-  // AUTH CONTEXT PROVIDER
-  // =========================================================
+  const logout = () => {
+    try {
+      localStorage.removeItem(AUTH_STORAGE_KEY);
+    } catch (e) {
+      console.error('Failed to remove auth session', e);
+    }
+    setUser(null);
+    setIsAuthenticated(false);
+  };
 
   return (
     <AuthContext.Provider
       value={{
-        investigator,
+        isAuthenticated,
+        isInitialized,
+        user,
         login,
-        register,
-        logout,
+        logout
       }}
     >
       {children}
     </AuthContext.Provider>
   );
-};
+}
 
-
-// ===========================================================
-// USE AUTH HOOK
-// ===========================================================
-
-export const useAuth = () => {
-
-  const context =
-    useContext(AuthContext);
-
+export function useAuth() {
+  const context = useContext(AuthContext);
   if (!context) {
-
-    throw new Error(
-      'useAuth must be used inside AuthProvider'
-    );
+    throw new Error('useAuth must be used within an AuthProvider');
   }
-
   return context;
-};
+}
