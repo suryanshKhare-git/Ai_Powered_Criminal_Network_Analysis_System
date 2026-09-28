@@ -10,6 +10,10 @@ import {
 import { formatAddress, getConfidenceColor } from '@/utils/formatters';
 import Link from 'next/link';
 
+export function generateStaticParams() {
+  return [];
+}
+
 export default function InvestigationsPage() {
   const { allCases, currentCase, loadCase } = useInvestigation();
   const [searchQuery, setSearchQuery] = useState('');
